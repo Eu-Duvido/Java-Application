@@ -18,6 +18,11 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public ListUserUseCase listUserUseCase(UserRepository userRepository) {
+        return new ListUserUseCase(userRepository);
+    }
+
+    @Bean
     public CreateChallengeUseCase createChallengeUseCase(ChallengeRepository challengeRepository,
                                                         UserRepository userRepository) {
         return new CreateChallengeUseCase(challengeRepository, userRepository);

@@ -2,6 +2,7 @@ package com.euduvido.euduvido_api.domain.repositories;
 
 import com.euduvido.euduvido_api.domain.entities.User;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,5 +35,10 @@ public interface UserRepository {
      * Deletar um usuário pelo ID
      */
     void deleteById(Long id);
+
+    /**
+     * Listar todos os usuários
+     */
+    List<User> findAll();
 }
 

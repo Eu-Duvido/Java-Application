@@ -1,12 +1,16 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
 import com.euduvido.euduvido_api.application.usecases.CreateUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.ListUserUseCase;
+import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateUserRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.UserResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Controller REST para gerenciar usuários.
@@ -17,9 +21,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final CreateUserUseCase createUserUseCase;
+    private final ListUserUseCase listUserUseCase;
 
-    public UserController(CreateUserUseCase createUserUseCase) {
+    public UserController(CreateUserUseCase createUserUseCase, ListUserUseCase listUserUseCase) {
         this.createUserUseCase = createUserUseCase;
+        this.listUserUseCase = listUserUseCase;
     }
 
     /**
@@ -37,6 +43,17 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(UserResponse.fromDomain(user));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> listUsers() {
+        List<User> users = listUserUseCase.execute();
+
+        List<UserResponse> usersResponse = users.stream()
+                .map(UserResponse::fromDomain)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(usersResponse);
     }
 }
 

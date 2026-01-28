@@ -78,11 +78,11 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         deleteUserUseCase.execute(id);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.noContent().build();
     }
 
     /**
-     * UPDATE /api/v1/users/{id}
+     * UPDATE /api/v1/users
      * Atualizar um usuário
      */
     @PutMapping()

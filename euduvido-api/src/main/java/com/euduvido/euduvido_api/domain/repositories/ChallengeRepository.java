@@ -35,5 +35,10 @@ public interface ChallengeRepository {
      * Deletar um desafio pelo ID
      */
     void deleteById(Long id);
+
+    /**
+     * Listar todos os desafios
+     */
+    List<Challenge> findAll();
 }
 

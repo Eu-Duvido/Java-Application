@@ -34,8 +34,24 @@ public class UseCaseConfig {
 
     @Bean
     public CreateChallengeUseCase createChallengeUseCase(ChallengeRepository challengeRepository,
-                                                        UserRepository userRepository) {
+                                                         UserRepository userRepository) {
         return new CreateChallengeUseCase(challengeRepository, userRepository);
+    }
+
+    @Bean
+    public DeleteChallengeUseCase deleteChallengeUseCase(ChallengeRepository challengeRepository) {
+        return new DeleteChallengeUseCase(challengeRepository);
+    }
+
+    @Bean
+    public ListChallengeUseCase listChallengeUseCase(ChallengeRepository challengeRepository) {
+        return new ListChallengeUseCase(challengeRepository);
+    }
+
+    @Bean
+    public UpdateChallengeUseCase updateChallengeUseCase(ChallengeRepository challengeRepository,
+                                                         UserRepository userRepository) {
+        return new UpdateChallengeUseCase(challengeRepository, userRepository);
     }
 
     @Bean

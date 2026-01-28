@@ -54,5 +54,13 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public List<Challenge> findAll() {
+        return jpaRepository.findAll()
+                .stream()
+                .map(ChallengeEntity::toDomain)
+                .toList();
+    }
 }
 

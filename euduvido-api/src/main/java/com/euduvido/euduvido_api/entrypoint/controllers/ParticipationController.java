@@ -1,6 +1,7 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
 import com.euduvido.euduvido_api.application.usecases.*;
+import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateParticipationRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.SubmitProofRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeParticipationResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ProofResponse;
@@ -23,17 +24,20 @@ public class ParticipationController {
     private final SubmitProofUseCase submitProofUseCase;
     private final ApproveProofUseCase approveProofUseCase;
     private final ListReceivedChallengesUseCase listReceivedChallengesUseCase;
+    private final CreateChallengeParticipationUseCase createChallengeParticipationUseCase;
 
     public ParticipationController(AcceptChallengeUseCase acceptChallengeUseCase,
                                    RefuseChallengeUseCase refuseChallengeUseCase,
                                    SubmitProofUseCase submitProofUseCase,
                                    ApproveProofUseCase approveProofUseCase,
-                                   ListReceivedChallengesUseCase listReceivedChallengesUseCase) {
+                                   ListReceivedChallengesUseCase listReceivedChallengesUseCase,
+                                   CreateChallengeParticipationUseCase createChallengeParticipationUseCase) {
         this.acceptChallengeUseCase = acceptChallengeUseCase;
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
         this.approveProofUseCase = approveProofUseCase;
         this.listReceivedChallengesUseCase = listReceivedChallengesUseCase;
+        this.createChallengeParticipationUseCase = createChallengeParticipationUseCase;
     }
 
     /**
@@ -87,6 +91,17 @@ public class ParticipationController {
                 .map(ChallengeParticipationResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(responses);
+    }
+
+    /**
+     * POST /api/v1/participations
+     * Criar a participação em um desafio
+     */
+    @PostMapping
+    public ResponseEntity<ChallengeParticipationResponse> createParticipationChallenge(@Valid @RequestBody CreateParticipationRequest request) {
+        var participaiton = createChallengeParticipationUseCase.execute(request.getUser(), request.getChallenge());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ChallengeParticipationResponse.fromDomain(participaiton));
     }
 }
 

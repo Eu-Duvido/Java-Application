@@ -55,6 +55,11 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public CreateChallengeParticipationUseCase createChallengeParticipationUseCase(ChallengeParticipationRepository challengeParticipationRepository) {
+        return new CreateChallengeParticipationUseCase(challengeParticipationRepository);
+    }
+
+    @Bean
     public InviteUserToChallengeUseCase inviteUserToChallengeUseCase(
             ChallengeParticipationRepository participationRepository,
             ChallengeRepository challengeRepository,

@@ -67,5 +67,30 @@ public class UseCaseConfig {
     public UpdateExpiredChallengesUseCase updateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         return new UpdateExpiredChallengesUseCase(challengeRepository);
     }
-}
 
+    // New Invite related use cases
+    @Bean
+    public CreateInviteUseCase createInviteUseCase(InviteRepository inviteRepository, UserRepository userRepository) {
+        return new CreateInviteUseCase(inviteRepository, userRepository);
+    }
+
+    @Bean
+    public GetInviteUseCase getInviteUseCase(InviteRepository inviteRepository) {
+        return new GetInviteUseCase(inviteRepository);
+    }
+
+    @Bean
+    public ListInvitesUseCase listInvitesUseCase(InviteRepository inviteRepository) {
+        return new ListInvitesUseCase(inviteRepository);
+    }
+
+    @Bean
+    public DeleteInviteUseCase deleteInviteUseCase(InviteRepository inviteRepository) {
+        return new DeleteInviteUseCase(inviteRepository);
+    }
+
+    @Bean
+    public AcceptInviteUseCase acceptInviteUseCase(InviteRepository inviteRepository) {
+        return new AcceptInviteUseCase(inviteRepository);
+    }
+}

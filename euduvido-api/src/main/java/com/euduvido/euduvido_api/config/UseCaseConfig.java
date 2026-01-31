@@ -100,6 +100,12 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase(
+            ChallengeParticipationRepository participationRepository) {
+        return new DeleteChallengeParticipationUseCase(participationRepository);
+    }
+
+    @Bean
     public UpdateExpiredChallengesUseCase updateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         return new UpdateExpiredChallengesUseCase(challengeRepository);
     }

@@ -25,19 +25,22 @@ public class ParticipationController {
     private final ApproveProofUseCase approveProofUseCase;
     private final ListReceivedChallengesUseCase listReceivedChallengesUseCase;
     private final CreateChallengeParticipationUseCase createChallengeParticipationUseCase;
+    private final DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase;
 
     public ParticipationController(AcceptChallengeUseCase acceptChallengeUseCase,
                                    RefuseChallengeUseCase refuseChallengeUseCase,
                                    SubmitProofUseCase submitProofUseCase,
                                    ApproveProofUseCase approveProofUseCase,
                                    ListReceivedChallengesUseCase listReceivedChallengesUseCase,
-                                   CreateChallengeParticipationUseCase createChallengeParticipationUseCase) {
+                                   CreateChallengeParticipationUseCase createChallengeParticipationUseCase,
+                                   DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase) {
         this.acceptChallengeUseCase = acceptChallengeUseCase;
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
         this.approveProofUseCase = approveProofUseCase;
         this.listReceivedChallengesUseCase = listReceivedChallengesUseCase;
         this.createChallengeParticipationUseCase = createChallengeParticipationUseCase;
+        this.deleteChallengeParticipationUseCase = deleteChallengeParticipationUseCase;
     }
 
     /**
@@ -102,6 +105,17 @@ public class ParticipationController {
         var participaiton = createChallengeParticipationUseCase.execute(request.getUser(), request.getChallenge());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ChallengeParticipationResponse.fromDomain(participaiton));
+    }
+
+    /**
+     * DELETE /api/v1/participations/{id}
+     * Deletar a participação em um desafio
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteParticipationChallenge(@PathVariable Long id) {
+        deleteChallengeParticipationUseCase.execute(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
 

@@ -55,6 +55,11 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public CreateChallengeParticipationUseCase createChallengeParticipationUseCase(ChallengeParticipationRepository challengeParticipationRepository) {
+        return new CreateChallengeParticipationUseCase(challengeParticipationRepository);
+    }
+
+    @Bean
     public InviteUserToChallengeUseCase inviteUserToChallengeUseCase(
             ChallengeParticipationRepository participationRepository,
             ChallengeRepository challengeRepository,
@@ -95,8 +100,19 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase(
+            ChallengeParticipationRepository participationRepository) {
+        return new DeleteChallengeParticipationUseCase(participationRepository);
+    }
+
+    @Bean
     public UpdateExpiredChallengesUseCase updateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         return new UpdateExpiredChallengesUseCase(challengeRepository);
+    }
+
+    @Bean
+    public UpdateChallengeParticipationUseCase UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository, UserRepository userRepository) {
+        return new UpdateChallengeParticipationUseCase(participationRepository, userRepository);
     }
 }
 

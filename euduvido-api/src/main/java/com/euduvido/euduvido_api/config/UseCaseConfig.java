@@ -109,5 +109,10 @@ public class UseCaseConfig {
     public UpdateExpiredChallengesUseCase updateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         return new UpdateExpiredChallengesUseCase(challengeRepository);
     }
+
+    @Bean
+    public UpdateChallengeParticipationUseCase UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository, UserRepository userRepository) {
+        return new UpdateChallengeParticipationUseCase(participationRepository, userRepository);
+    }
 }
 

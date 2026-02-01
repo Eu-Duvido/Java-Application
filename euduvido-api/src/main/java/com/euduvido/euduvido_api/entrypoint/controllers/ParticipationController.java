@@ -3,6 +3,7 @@ package com.euduvido.euduvido_api.entrypoint.controllers;
 import com.euduvido.euduvido_api.application.usecases.*;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateParticipationRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.SubmitProofRequest;
+import com.euduvido.euduvido_api.entrypoint.dtos.request.UpdateParticipationChallengeRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeParticipationResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ProofResponse;
 import jakarta.validation.Valid;
@@ -26,6 +27,7 @@ public class ParticipationController {
     private final ListReceivedChallengesUseCase listReceivedChallengesUseCase;
     private final CreateChallengeParticipationUseCase createChallengeParticipationUseCase;
     private final DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase;
+    private final UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase;
 
     public ParticipationController(AcceptChallengeUseCase acceptChallengeUseCase,
                                    RefuseChallengeUseCase refuseChallengeUseCase,
@@ -33,7 +35,8 @@ public class ParticipationController {
                                    ApproveProofUseCase approveProofUseCase,
                                    ListReceivedChallengesUseCase listReceivedChallengesUseCase,
                                    CreateChallengeParticipationUseCase createChallengeParticipationUseCase,
-                                   DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase) {
+                                   DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase,
+                                   UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase) {
         this.acceptChallengeUseCase = acceptChallengeUseCase;
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
@@ -41,6 +44,7 @@ public class ParticipationController {
         this.listReceivedChallengesUseCase = listReceivedChallengesUseCase;
         this.createChallengeParticipationUseCase = createChallengeParticipationUseCase;
         this.deleteChallengeParticipationUseCase = deleteChallengeParticipationUseCase;
+        this.updateChallengeParticipationUseCase = updateChallengeParticipationUseCase;
     }
 
     /**
@@ -116,6 +120,22 @@ public class ParticipationController {
         deleteChallengeParticipationUseCase.execute(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * UPDATE /api/v1/participations
+     * Atualizar a participação em um desafio
+     */
+    @PutMapping
+    public ResponseEntity<ChallengeParticipationResponse> updateParticipationChallenge(@Valid @RequestBody UpdateParticipationChallengeRequest request) {
+        var updatedParticipation = updateChallengeParticipationUseCase.execute(
+                request.getIdChallengeParticipation(),
+                request.getUser(),
+                request.getChallenge(),
+                request.getStatus()
+        );
+
+        return ResponseEntity.ok(ChallengeParticipationResponse.fromDomain(updatedParticipation));
     }
 }
 

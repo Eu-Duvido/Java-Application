@@ -6,6 +6,7 @@ import com.euduvido.euduvido_api.infrastructure.persistence.entities.UserEntity;
 import com.euduvido.euduvido_api.infrastructure.persistence.repositories.UserJpaRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,6 +47,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<User> findAll() {
+        List<UserEntity> usersEntity = jpaRepository.findAll();
+
+        return usersEntity.stream()
+                .map(UserEntity::toDomain)
+                .toList();
     }
 }
 

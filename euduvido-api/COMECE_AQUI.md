@@ -6,7 +6,7 @@ Parabéns! Toda a estrutura da API "Eu Duvido" foi implementada seguindo Clean A
 
 ---
 
-## 📋 Checklist de Verificação
+## 📋 Checklist de Verificação!
 
 ### ✅ O que foi criado
 

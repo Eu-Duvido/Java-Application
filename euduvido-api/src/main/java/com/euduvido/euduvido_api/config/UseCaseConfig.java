@@ -18,9 +18,45 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public ListUserUseCase listUserUseCase(UserRepository userRepository) {
+        return new ListUserUseCase(userRepository);
+    }
+
+    @Bean
+    public UpdateUserUseCase updateUserUseCase(UserRepository userRepository) {
+        return new UpdateUserUseCase(userRepository);
+    }
+
+    @Bean
+    public DeleteUserUseCase deleteUserUseCase(UserRepository userRepository) {
+        return new DeleteUserUseCase(userRepository);
+    }
+
+    @Bean
     public CreateChallengeUseCase createChallengeUseCase(ChallengeRepository challengeRepository,
-                                                        UserRepository userRepository) {
+                                                         UserRepository userRepository) {
         return new CreateChallengeUseCase(challengeRepository, userRepository);
+    }
+
+    @Bean
+    public DeleteChallengeUseCase deleteChallengeUseCase(ChallengeRepository challengeRepository) {
+        return new DeleteChallengeUseCase(challengeRepository);
+    }
+
+    @Bean
+    public ListChallengeUseCase listChallengeUseCase(ChallengeRepository challengeRepository) {
+        return new ListChallengeUseCase(challengeRepository);
+    }
+
+    @Bean
+    public UpdateChallengeUseCase updateChallengeUseCase(ChallengeRepository challengeRepository,
+                                                         UserRepository userRepository) {
+        return new UpdateChallengeUseCase(challengeRepository, userRepository);
+    }
+
+    @Bean
+    public CreateChallengeParticipationUseCase createChallengeParticipationUseCase(ChallengeParticipationRepository challengeParticipationRepository) {
+        return new CreateChallengeParticipationUseCase(challengeParticipationRepository);
     }
 
     @Bean
@@ -64,8 +100,19 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase(
+            ChallengeParticipationRepository participationRepository) {
+        return new DeleteChallengeParticipationUseCase(participationRepository);
+    }
+
+    @Bean
     public UpdateExpiredChallengesUseCase updateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         return new UpdateExpiredChallengesUseCase(challengeRepository);
+    }
+
+    @Bean
+    public UpdateChallengeParticipationUseCase UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository, UserRepository userRepository) {
+        return new UpdateChallengeParticipationUseCase(participationRepository, userRepository);
     }
 }
 

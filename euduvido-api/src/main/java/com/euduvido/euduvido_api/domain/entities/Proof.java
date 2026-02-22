@@ -18,6 +18,9 @@ public class Proof {
     private LocalDateTime submittedAt;
     private Boolean approved;
 
+    public Proof() {
+    }
+
     private Proof(Long id, ChallengeParticipation participation, String mediaUrl, MediaType mediaType,
                   Double latitude, Double longitude, LocalDateTime submittedAt, Boolean approved) {
         this.id = id;
@@ -30,21 +33,18 @@ public class Proof {
         this.approved = approved;
     }
 
-    // Factory method para criar uma nova comprovação
     public static Proof create(ChallengeParticipation participation, String mediaUrl, MediaType mediaType,
                                Double latitude, Double longitude) {
         validateProofData(participation, mediaUrl, mediaType);
         return new Proof(null, participation, mediaUrl, mediaType, latitude, longitude, LocalDateTime.now(), false);
     }
 
-    // Factory method para recriar comprovação do banco de dados
     public static Proof createFromDatabase(Long id, ChallengeParticipation participation, String mediaUrl,
                                            MediaType mediaType, Double latitude, Double longitude,
                                            LocalDateTime submittedAt, Boolean approved) {
         return new Proof(id, participation, mediaUrl, mediaType, latitude, longitude, submittedAt, approved);
     }
 
-    // Validações de domínio
     private static void validateProofData(ChallengeParticipation participation, String mediaUrl, MediaType mediaType) {
         if (participation == null) {
             throw new IllegalArgumentException("Comprovação deve estar associada a uma participação");
@@ -57,7 +57,6 @@ public class Proof {
         }
     }
 
-    // Lógica de negócio: aprovar comprovação
     public void approve() {
         if (this.approved) {
             throw new IllegalStateException("Comprovação já foi aprovada");
@@ -67,45 +66,66 @@ public class Proof {
         this.participation.complete();
     }
 
-    // Lógica de negócio: rejeitar comprovação
     public void reject() {
         if (this.approved) {
             throw new IllegalStateException("Comprovação já foi aprovada e não pode ser rejeitada");
         }
-        // A comprovação é simplesmente não aprovada
     }
 
-    // Getters
     public Long getId() {
         return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public ChallengeParticipation getParticipation() {
         return participation;
     }
+    public void setParticipation(ChallengeParticipation participation) {
+        this.participation = participation;
+    }
 
     public String getMediaUrl() {
         return mediaUrl;
+    }
+    public void setMediaUrl(String mediaUrl) {
+        this.mediaUrl = mediaUrl;
     }
 
     public MediaType getMediaType() {
         return mediaType;
     }
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
 
     public Double getLatitude() {
         return latitude;
+    }
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
     }
 
     public Double getLongitude() {
         return longitude;
     }
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
 
     public LocalDateTime getSubmittedAt() {
         return submittedAt;
     }
+    public void setSubmittedAt(LocalDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
 
     public Boolean getApproved() {
         return approved;
+    }
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
     }
 }
 

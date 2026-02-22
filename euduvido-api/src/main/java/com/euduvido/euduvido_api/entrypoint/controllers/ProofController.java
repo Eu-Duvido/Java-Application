@@ -1,6 +1,6 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
-import com.euduvido.euduvido_api.application.usecases.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ProofResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,4 +28,5 @@ public class ProofController {
         return ResponseEntity.ok(ProofResponse.fromDomain(proof));
     }
 }
+
 

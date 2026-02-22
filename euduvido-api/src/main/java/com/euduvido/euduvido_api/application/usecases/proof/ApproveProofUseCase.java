@@ -1,4 +1,4 @@
-package com.euduvido.euduvido_api.application.usecases;
+package com.euduvido.euduvido_api.application.usecases.proof;
 
 import com.euduvido.euduvido_api.domain.entities.Proof;
 import com.euduvido.euduvido_api.domain.repositories.ProofRepository;

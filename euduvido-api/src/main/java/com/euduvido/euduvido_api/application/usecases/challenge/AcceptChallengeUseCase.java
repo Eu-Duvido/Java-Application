@@ -1,4 +1,4 @@
-package com.euduvido.euduvido_api.application.usecases;
+package com.euduvido.euduvido_api.application.usecases.challenge;
 
 import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;

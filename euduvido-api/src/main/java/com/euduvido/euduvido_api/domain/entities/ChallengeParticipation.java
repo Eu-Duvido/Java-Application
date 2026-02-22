@@ -15,6 +15,9 @@ public class ChallengeParticipation {
     private ParticipationStatus status;
     private LocalDateTime createdAt;
 
+    public ChallengeParticipation() {
+    }
+
     private ChallengeParticipation(Long id, User user, Challenge challenge, ParticipationStatus status, LocalDateTime createdAt) {
         this.id = id;
         this.user = user;
@@ -23,19 +26,16 @@ public class ChallengeParticipation {
         this.createdAt = createdAt;
     }
 
-    // Factory method para criar uma nova participação (convidado)
     public static ChallengeParticipation create(User user, Challenge challenge) {
         validateParticipationData(user, challenge);
         return new ChallengeParticipation(null, user, challenge, ParticipationStatus.INVITED, LocalDateTime.now());
     }
 
-    // Factory method para recriar participação do banco de dados
     public static ChallengeParticipation createFromDatabase(Long id, User user, Challenge challenge,
                                                             ParticipationStatus status, LocalDateTime createdAt) {
         return new ChallengeParticipation(id, user, challenge, status, createdAt);
     }
 
-    // Validações de domínio
     private static void validateParticipationData(User user, Challenge challenge) {
         if (user == null) {
             throw new IllegalArgumentException("Participação deve ter um usuário");
@@ -45,7 +45,6 @@ public class ChallengeParticipation {
         }
     }
 
-    // Lógica de negócio: aceitar desafio
     public void accept() {
         if (this.status != ParticipationStatus.INVITED) {
             throw new IllegalStateException("Apenas convites podem ser aceitos");
@@ -53,7 +52,6 @@ public class ChallengeParticipation {
         this.status = ParticipationStatus.ACCEPTED;
     }
 
-    // Lógica de negócio: recusar desafio
     public void refuse() {
         if (this.status != ParticipationStatus.INVITED) {
             throw new IllegalStateException("Apenas convites podem ser recusados");
@@ -61,7 +59,6 @@ public class ChallengeParticipation {
         this.status = ParticipationStatus.REFUSED;
     }
 
-    // Lógica de negócio: completar desafio
     public void complete() {
         if (this.status != ParticipationStatus.ACCEPTED) {
             throw new IllegalStateException("Apenas desafios aceitos podem ser completados");
@@ -69,25 +66,39 @@ public class ChallengeParticipation {
         this.status = ParticipationStatus.COMPLETED;
     }
 
-    // Getters
     public Long getId() {
         return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public User getUser() {
         return user;
     }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Challenge getChallenge() {
         return challenge;
+    }
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
     }
 
     public ParticipationStatus getStatus() {
         return status;
     }
+    public void setStatus(ParticipationStatus status) {
+        this.status = status;
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
 

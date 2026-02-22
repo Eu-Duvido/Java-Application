@@ -1,4 +1,4 @@
-package com.euduvido.euduvido_api.application.usecases;
+package com.euduvido.euduvido_api.application.usecases.user;
 
 import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;

@@ -1,6 +1,13 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
-import com.euduvido.euduvido_api.application.usecases.*;
+import com.euduvido.euduvido_api.application.usecases.challenge.AcceptChallengeUseCase;
+import com.euduvido.euduvido_api.application.usecases.challenge.ListReceivedChallengesUseCase;
+import com.euduvido.euduvido_api.application.usecases.challenge.RefuseChallengeUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.CreateChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.DeleteChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateParticipationRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.SubmitProofRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.UpdateParticipationChallengeRequest;

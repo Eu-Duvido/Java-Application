@@ -1,9 +1,9 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
-import com.euduvido.euduvido_api.application.usecases.CreateUserUseCase;
-import com.euduvido.euduvido_api.application.usecases.DeleteUserUseCase;
-import com.euduvido.euduvido_api.application.usecases.ListUserUseCase;
-import com.euduvido.euduvido_api.application.usecases.UpdateUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.CreateUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.DeleteUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.ListUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.UpdateUserUseCase;
 import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateUserRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.UpdateUserRequest;

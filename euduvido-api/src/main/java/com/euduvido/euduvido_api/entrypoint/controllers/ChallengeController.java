@@ -1,6 +1,7 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
 import com.euduvido.euduvido_api.application.usecases.*;
+import com.euduvido.euduvido_api.application.usecases.challenge.*;
 import com.euduvido.euduvido_api.domain.entities.Challenge;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.CreateChallengeRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeResponse;
@@ -108,7 +109,7 @@ public class ChallengeController {
      * GET /api/v1/challenges/
      * Listar todos os desafios
      */
-    @GetMapping("/{id}")
+    @GetMapping
     public ResponseEntity<List<ChallengeResponse>> listChallenges() {
         List<Challenge> challengesDomain = listChallengeUseCase.execute();
 
@@ -136,4 +137,3 @@ public class ChallengeController {
         return ResponseEntity.ok().body(ChallengeResponse.fromDomain(challengeDomain));
     }
 }
-

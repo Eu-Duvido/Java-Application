@@ -1,6 +1,26 @@
 package com.euduvido.euduvido_api.config;
 
 import com.euduvido.euduvido_api.application.usecases.*;
+import com.euduvido.euduvido_api.application.usecases.challenge.*;
+import com.euduvido.euduvido_api.application.usecases.participation.CreateChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.DeleteChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.ListChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.GetProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.UpdateProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.DeleteProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.invite.CreateInviteUseCase;
+import com.euduvido.euduvido_api.application.usecases.invite.AcceptInviteUseCase;
+import com.euduvido.euduvido_api.application.usecases.invite.DeleteInviteUseCase;
+import com.euduvido.euduvido_api.application.usecases.invite.ListInvitesUseCase;
+import com.euduvido.euduvido_api.application.usecases.invite.GetInviteUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.CreateUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.DeleteUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.ListUserUseCase;
+import com.euduvido.euduvido_api.application.usecases.user.UpdateUserUseCase;
 import com.euduvido.euduvido_api.domain.repositories.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -89,6 +109,52 @@ public class UseCaseConfig {
     }
 
     @Bean
+    public GetProofUseCase getProofUseCase(ProofRepository proofRepository) {
+        return new GetProofUseCase(proofRepository);
+    }
+
+    @Bean
+    public ListProofsByParticipationUseCase listProofsByParticipationUseCase(ProofRepository proofRepository) {
+        return new ListProofsByParticipationUseCase(proofRepository);
+    }
+
+    @Bean
+    public UpdateProofUseCase updateProofUseCase(ProofRepository proofRepository) {
+        return new UpdateProofUseCase(proofRepository);
+    }
+
+    @Bean
+    public DeleteProofUseCase deleteProofUseCase(ProofRepository proofRepository) {
+        return new DeleteProofUseCase(proofRepository);
+    }
+
+    @Bean
+    public CreateInviteUseCase createInviteUseCase(com.euduvido.euduvido_api.domain.repositories.InviteRepository inviteRepository,
+                                                   com.euduvido.euduvido_api.domain.repositories.UserRepository userRepository) {
+        return new CreateInviteUseCase(inviteRepository, userRepository);
+    }
+
+    @Bean
+    public AcceptInviteUseCase acceptInviteUseCase(com.euduvido.euduvido_api.domain.repositories.InviteRepository inviteRepository) {
+        return new AcceptInviteUseCase(inviteRepository);
+    }
+
+    @Bean
+    public DeleteInviteUseCase deleteInviteUseCase(com.euduvido.euduvido_api.domain.repositories.InviteRepository inviteRepository) {
+        return new DeleteInviteUseCase(inviteRepository);
+    }
+
+    @Bean
+    public ListInvitesUseCase listInvitesUseCase(com.euduvido.euduvido_api.domain.repositories.InviteRepository inviteRepository) {
+        return new ListInvitesUseCase(inviteRepository);
+    }
+
+    @Bean
+    public GetInviteUseCase getInviteUseCase(com.euduvido.euduvido_api.domain.repositories.InviteRepository inviteRepository) {
+        return new GetInviteUseCase(inviteRepository);
+    }
+
+    @Bean
     public ListCreatedChallengesUseCase listCreatedChallengesUseCase(ChallengeRepository challengeRepository) {
         return new ListCreatedChallengesUseCase(challengeRepository);
     }
@@ -114,5 +180,9 @@ public class UseCaseConfig {
     public UpdateChallengeParticipationUseCase UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository, UserRepository userRepository) {
         return new UpdateChallengeParticipationUseCase(participationRepository, userRepository);
     }
-}
 
+    @Bean
+    public ListChallengeParticipationUseCase listChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository) {
+        return new ListChallengeParticipationUseCase(participationRepository);
+    }
+}

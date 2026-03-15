@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
 /**
  * Entidade JPA para representar um Invite no banco de dados
@@ -33,15 +32,12 @@ public class InviteEntity {
     @Column(name = "accepted", nullable = false)
     private Boolean accepted = false;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     /**
      * Converte entidade JPA para entidade de domínio.
      * Nota: Este método precisa receber os usuários pré-carregados.
      */
     public Invite toDomain(User sender, User recipient) {
-        return Invite.createFromDatabase(id, sender, recipient, message, accepted, createdAt);
+        return Invite.createFromDatabase(id, sender, recipient, message, accepted);
     }
 
     /**
@@ -54,7 +50,6 @@ public class InviteEntity {
         entity.setRecipientId(invite.getRecipient() != null ? invite.getRecipient().getId() : null);
         entity.setMessage(invite.getMessage());
         entity.setAccepted(invite.getAccepted());
-        entity.setCreatedAt(invite.getCreatedAt());
         return entity;
     }
 }

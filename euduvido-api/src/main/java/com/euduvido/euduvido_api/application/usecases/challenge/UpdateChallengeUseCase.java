@@ -40,7 +40,7 @@ public class UpdateChallengeUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado"));
 
         // Criar desafio (validações de domínio ocorrem aqui)
-        Challenge newChallenge = Challenge.createFromDatabase(existingChallenge.getId(), title, description, creator, deadline, existingChallenge.getStatus(), locationRequired, existingChallenge.getCreatedAt());
+        Challenge newChallenge = Challenge.createFromDatabase(existingChallenge.getId(), title, description, existingChallenge.getDifficulty(), existingChallenge.getProgress(), creator, deadline, existingChallenge.getStatus(), locationRequired, existingChallenge.getCreatedAt(), existingChallenge.getParticipants());
 
         // Persistir desafio
         return challengeRepository.save(newChallenge);

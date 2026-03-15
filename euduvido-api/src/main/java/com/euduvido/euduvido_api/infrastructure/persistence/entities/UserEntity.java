@@ -34,14 +34,11 @@ public class UserEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     /**
      * Converte entidade JPA para entidade de domínio
      */
     public User toDomain() {
-        return User.createFromDatabase(id, name, email, password, profileImageUrl, createdAt);
+        return User.createFromDatabase(id, name, email, password, profileImageUrl);
     }
 
     /**
@@ -54,7 +51,6 @@ public class UserEntity {
         entity.setEmail(user.getEmail());
         entity.setPassword(user.getPassword());
         entity.setProfileImageUrl(user.getProfileImageUrl());
-        entity.setCreatedAt(user.getCreatedAt());
         return entity;
     }
 }

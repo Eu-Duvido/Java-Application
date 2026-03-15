@@ -3,6 +3,8 @@ package com.euduvido.euduvido_api.domain.entities;
 import com.euduvido.euduvido_api.domain.enums.ChallengeStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Entidade de domínio que representa um desafio no sistema.
@@ -12,43 +14,65 @@ public class Challenge {
     private Long id;
     private String title;
     private String description;
-    private User creator;
-    private LocalDateTime deadline;
+    private String difficulty;
+    private Double progress;
     private ChallengeStatus status;
+    private LocalDateTime deadline;
     private Boolean locationRequired;
     private LocalDateTime createdAt;
+    private User creator;
+    private List<User> participants;
 
     public Challenge() {
     }
 
-    private Challenge(Long id, String title, String description, User creator, LocalDateTime deadline,
-                      ChallengeStatus status, Boolean locationRequired, LocalDateTime createdAt) {
+    public Challenge(Long id, String title, String description, String difficulty, Double progress, ChallengeStatus status, LocalDateTime deadline, Boolean locationRequired, LocalDateTime createdAt, User creator, List<User> participants) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.creator = creator;
-        this.deadline = deadline;
+        this.difficulty = difficulty;
+        this.progress = progress;
         this.status = status;
+        this.deadline = deadline;
         this.locationRequired = locationRequired;
         this.createdAt = createdAt;
+        this.creator = creator;
+        this.participants = participants;
     }
 
-    public static Challenge create(String title, String description, User creator, LocalDateTime deadline, Boolean locationRequired) {
-        validateChallengeData(title, description, creator, deadline);
-        return new Challenge(null, title, description, creator, deadline, ChallengeStatus.PENDING, locationRequired, LocalDateTime.now());
+    public static Challenge create(String title, String subtitle, User creator, LocalDateTime deadline, Boolean locationRequired) {
+        validateChallengeData(title, subtitle, creator, deadline);
+        // Preencher campos opcionais com valores padrão
+        String defaultDifficulty = null;
+        Double defaultProgress = 0.0;
+        List<User> defaultParticipants = new ArrayList<>();
+        return new Challenge(
+                null,
+                title,
+                subtitle,
+                defaultDifficulty,
+                defaultProgress,
+                ChallengeStatus.PENDING,
+                deadline,
+                locationRequired,
+                LocalDateTime.now(),
+                creator,
+                defaultParticipants
+        );
     }
 
-    public static Challenge createFromDatabase(Long id, String title, String description, User creator,
+    public static Challenge createFromDatabase(Long id, String title, String subtitle, String difficulty, Double progress, User creator,
                                                LocalDateTime deadline, ChallengeStatus status,
-                                               Boolean locationRequired, LocalDateTime createdAt) {
-        return new Challenge(id, title, description, creator, deadline, status, locationRequired, createdAt);
+                                               Boolean locationRequired, LocalDateTime createdAt, List<User> participants) {
+        List<User> safeParticipants = participants == null ? new ArrayList<>() : participants;
+        return new Challenge(id, title, subtitle, difficulty, progress, status, deadline, locationRequired, createdAt, creator, safeParticipants);
     }
 
-    private static void validateChallengeData(String title, String description, User creator, LocalDateTime deadline) {
+    private static void validateChallengeData(String title, String subtitle, User creator, LocalDateTime deadline) {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Título do desafio não pode ser vazio");
         }
-        if (description == null || description.trim().isEmpty()) {
+        if (subtitle == null || subtitle.trim().isEmpty()) {
             throw new IllegalArgumentException("Descrição do desafio não pode ser vazia");
         }
         if (creator == null) {
@@ -87,6 +111,7 @@ public class Challenge {
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -94,6 +119,7 @@ public class Challenge {
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -101,34 +127,47 @@ public class Challenge {
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public User getCreator() {
-        return creator;
-    }
-    public void setCreator(User creator) {
-        this.creator = creator;
+    public String getDifficulty() {
+        return difficulty;
     }
 
-    public LocalDateTime getDeadline() {
-        return deadline;
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
     }
-    public void setDeadline(LocalDateTime deadline) {
-        this.deadline = deadline;
+
+    public Double getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Double progress) {
+        this.progress = progress;
     }
 
     public ChallengeStatus getStatus() {
         return status;
     }
+
     public void setStatus(ChallengeStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(LocalDateTime deadline) {
+        this.deadline = deadline;
     }
 
     public Boolean getLocationRequired() {
         return locationRequired;
     }
+
     public void setLocationRequired(Boolean locationRequired) {
         this.locationRequired = locationRequired;
     }
@@ -136,8 +175,24 @@ public class Challenge {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-}
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public List<User> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<User> participants) {
+        this.participants = participants;
+    }
+}

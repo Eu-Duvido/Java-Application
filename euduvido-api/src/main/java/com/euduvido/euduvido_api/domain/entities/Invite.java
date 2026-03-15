@@ -8,26 +8,24 @@ public class Invite {
     private User recipient;
     private String message;
     private Boolean accepted;
-    private LocalDateTime createdAt;
 
-    private Invite(Long id, User sender, User recipient, String message, Boolean accepted, LocalDateTime createdAt) {
+    private Invite(Long id, User sender, User recipient, String message, Boolean accepted) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.message = message;
         this.accepted = accepted;
-        this.createdAt = createdAt;
     }
 
     // Factory para criar novo convite
     public static Invite create(User sender, User recipient, String message) {
         validateInviteData(sender, recipient);
-        return new Invite(null, sender, recipient, message, false, LocalDateTime.now());
+        return new Invite(null, sender, recipient, message, false);
     }
 
     // Factory para recriar do DB
-    public static Invite createFromDatabase(Long id, User sender, User recipient, String message, Boolean accepted, LocalDateTime createdAt) {
-        return new Invite(id, sender, recipient, message, accepted, createdAt);
+    public static Invite createFromDatabase(Long id, User sender, User recipient, String message, Boolean accepted) {
+        return new Invite(id, sender, recipient, message, accepted);
     }
 
     private static void validateInviteData(User sender, User recipient) {
@@ -83,12 +81,5 @@ public class Invite {
     }
     public void setAccepted(Boolean accepted) {
         this.accepted = accepted;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

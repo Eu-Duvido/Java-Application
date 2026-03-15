@@ -19,7 +19,7 @@ public class ChallengeParticipationResponse {
     private UserResponse user;
     private ChallengeResponse challenge;
     private ParticipationStatus status;
-    private LocalDateTime createdAt;
+    private String level;
 
     /**
      * Cria DTO a partir da entidade de domínio
@@ -30,7 +30,7 @@ public class ChallengeParticipationResponse {
                 UserResponse.fromDomain(participation.getUser()),
                 ChallengeResponse.fromDomain(participation.getChallenge()),
                 participation.getStatus(),
-                participation.getCreatedAt()
+                participation.getLevel()
         );
     }
 }

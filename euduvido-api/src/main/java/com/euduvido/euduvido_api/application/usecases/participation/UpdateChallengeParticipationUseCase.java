@@ -45,7 +45,7 @@ public class UpdateChallengeParticipationUseCase {
                 user,
                 challenge,
                 status,
-                existingParticipation.getCreatedAt()
+                existingParticipation.getLevel()
         );
 
         // Persiste a participação atualizada

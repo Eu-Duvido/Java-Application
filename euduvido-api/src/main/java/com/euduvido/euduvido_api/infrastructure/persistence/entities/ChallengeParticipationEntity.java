@@ -36,7 +36,7 @@ public class ChallengeParticipationEntity {
     private ParticipationStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private String level;
 
     /**
      * Converte entidade JPA para entidade de domínio
@@ -47,7 +47,7 @@ public class ChallengeParticipationEntity {
                 user.toDomain(),
                 challenge.toDomain(),
                 status,
-                createdAt
+                level
         );
     }
 
@@ -60,7 +60,7 @@ public class ChallengeParticipationEntity {
         entity.setUser(UserEntity.fromDomain(participation.getUser()));
         entity.setChallenge(ChallengeEntity.fromDomain(participation.getChallenge()));
         entity.setStatus(participation.getStatus());
-        entity.setCreatedAt(participation.getCreatedAt());
+        entity.setLevel(participation.getLevel());
         return entity;
     }
 }

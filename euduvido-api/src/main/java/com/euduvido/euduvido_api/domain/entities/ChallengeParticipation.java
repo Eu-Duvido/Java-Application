@@ -13,27 +13,27 @@ public class ChallengeParticipation {
     private User user;
     private Challenge challenge;
     private ParticipationStatus status;
-    private LocalDateTime createdAt;
+    private String level;
 
     public ChallengeParticipation() {
     }
 
-    private ChallengeParticipation(Long id, User user, Challenge challenge, ParticipationStatus status, LocalDateTime createdAt) {
+    private ChallengeParticipation(Long id, User user, Challenge challenge, ParticipationStatus status, String level) {
         this.id = id;
         this.user = user;
         this.challenge = challenge;
         this.status = status;
-        this.createdAt = createdAt;
+        this.level = level;
     }
 
     public static ChallengeParticipation create(User user, Challenge challenge) {
         validateParticipationData(user, challenge);
-        return new ChallengeParticipation(null, user, challenge, ParticipationStatus.INVITED, LocalDateTime.now());
+        return new ChallengeParticipation(null, user, challenge, ParticipationStatus.INVITED, null);
     }
 
     public static ChallengeParticipation createFromDatabase(Long id, User user, Challenge challenge,
-                                                            ParticipationStatus status, LocalDateTime createdAt) {
-        return new ChallengeParticipation(id, user, challenge, status, createdAt);
+                                                            ParticipationStatus status, String level) {
+        return new ChallengeParticipation(id, user, challenge, status, level);
     }
 
     private static void validateParticipationData(User user, Challenge challenge) {
@@ -94,11 +94,11 @@ public class ChallengeParticipation {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getLevel() {
+        return level;
     }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public void setLevel(String level) {
+        this.level = level;
+}
 }
 

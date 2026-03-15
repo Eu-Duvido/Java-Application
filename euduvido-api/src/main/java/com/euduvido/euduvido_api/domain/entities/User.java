@@ -1,7 +1,5 @@
 package com.euduvido.euduvido_api.domain.entities;
 
-import java.time.LocalDateTime;
-
 /**
  * Entidade de domínio que representa um usuário do sistema.
  * Contém informações básicas do usuário.
@@ -12,27 +10,25 @@ public class User {
     private String email;
     private String password;
     private String profileImageUrl;
-    private LocalDateTime createdAt;
 
     public User() {
     }
 
-    private User(Long id, String name, String email, String password, String profileImageUrl, LocalDateTime createdAt) {
+    private User(Long id, String name, String email, String password, String profileImageUrl) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.profileImageUrl = profileImageUrl;
-        this.createdAt = createdAt;
     }
 
     public static User create(String name, String email, String password, String profileImageUrl) {
         validateUserData(name, email, password);
-        return new User(null, name, email, password, profileImageUrl, LocalDateTime.now());
+        return new User(null, name, email, password, profileImageUrl);
     }
 
-    public static User createFromDatabase(Long id, String name, String email, String password, String profileImageUrl, LocalDateTime createdAt) {
-        return new User(id, name, email, password, profileImageUrl, createdAt);
+    public static User createFromDatabase(Long id, String name, String email, String password, String profileImageUrl) {
+        return new User(id, name, email, password, profileImageUrl);
     }
 
     private static void validateUserData(String name, String email, String password) {
@@ -89,13 +85,6 @@ public class User {
     }
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
 

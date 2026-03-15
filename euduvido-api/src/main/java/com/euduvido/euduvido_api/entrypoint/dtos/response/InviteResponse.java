@@ -22,7 +22,6 @@ public class InviteResponse {
         r.recipientId = invite.getRecipient() != null ? invite.getRecipient().getId() : null;
         r.message = invite.getMessage();
         r.accepted = invite.getAccepted();
-        r.createdAt = invite.getCreatedAt();
         return r;
     }
 

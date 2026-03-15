@@ -3,6 +3,7 @@ package com.euduvido.euduvido_api.domain.entities;
 import com.euduvido.euduvido_api.domain.enums.MediaType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Entidade de domínio que representa a comprovação de um desafio.
@@ -17,6 +18,7 @@ public class Proof {
     private Double longitude;
     private LocalDateTime submittedAt;
     private Boolean approved;
+    private List<User> approvers;
 
     public Proof() {
     }
@@ -126,6 +128,13 @@ public class Proof {
     }
     public void setApproved(Boolean approved) {
         this.approved = approved;
+    }
+
+    public List<User> getApprovers() {
+        return approvers;
+    }
+    public void setApprovers(List<User> approvers) {
+        this.approvers = approvers;
     }
 }
 

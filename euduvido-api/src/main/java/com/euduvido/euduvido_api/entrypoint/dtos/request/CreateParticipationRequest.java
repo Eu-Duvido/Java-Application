@@ -1,8 +1,6 @@
 package com.euduvido.euduvido_api.entrypoint.dtos.request;
 
-import com.euduvido.euduvido_api.domain.entities.Challenge;
-import com.euduvido.euduvido_api.domain.entities.User;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateParticipationRequest {
-    @NotBlank(message = "Usuário é obrigatório")
-    private User user;
+    @NotNull(message = "ID do usuário é obrigatório")
+    private Long userId;
 
-    @NotBlank(message = "Desafio é obrigatório")
-    private Challenge challenge;
+    @NotNull(message = "ID do desafio é obrigatório")
+    private Long challengeId;
 }

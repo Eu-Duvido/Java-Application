@@ -2,38 +2,27 @@ package com.euduvido.euduvido_api.application.usecases.user;
 
 import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Caso de uso: Criar um novo usuário.
- * Responsabilidade: Validar dados e persistir novo usuário.
+ * Responsabilidade: Validar dados, encriptar senha e persistir novo usuário.
  */
 public class CreateUserUseCase {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public CreateUserUseCase(UserRepository userRepository) {
+    public CreateUserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Executa a criação de um novo usuário
-     * @param name Nome do usuário
-     * @param email Email do usuário (deve ser único)
-     * @param password Senha do usuário
-     * @param profileImageUrl URL da imagem de perfil (opcional)
-     * @return Usuário criado
-     * @throws IllegalArgumentException se email já existe ou dados são inválidos
-     */
     public User execute(String name, String email, String password, String profileImageUrl) {
-        // Validar se email já existe
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email já cadastrado");
         }
-
-        // Criar usuário (validações de domínio ocorrem aqui)
-        User newUser = User.create(name, email, password, profileImageUrl);
-
-        // Persistir usuário
+        String encodedPassword = passwordEncoder.encode(password);
+        User newUser = User.create(name, email, encodedPassword, profileImageUrl);
         return userRepository.save(newUser);
     }
 }
-

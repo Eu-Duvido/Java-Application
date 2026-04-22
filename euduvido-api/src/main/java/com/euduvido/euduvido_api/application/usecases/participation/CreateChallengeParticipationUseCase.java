@@ -4,31 +4,30 @@ import com.euduvido.euduvido_api.domain.entities.Challenge;
 import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
 import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
+import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
+import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 
 /**
- * Caso de uso: Criar uma nova participação de desafio no qual relaciona um usuáario a um desafio.
- * Responsabilidade: Validar dados da participação e persistir.
+ * Caso de uso: Criar uma nova participação de desafio relacionando um usuário a um desafio.
  */
 public class CreateChallengeParticipationUseCase {
     private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final UserRepository userRepository;
+    private final ChallengeRepository challengeRepository;
 
-    public CreateChallengeParticipationUseCase (ChallengeParticipationRepository challengeParticipationRepository) {
+    public CreateChallengeParticipationUseCase(ChallengeParticipationRepository challengeParticipationRepository,
+                                               UserRepository userRepository,
+                                               ChallengeRepository challengeRepository) {
         this.challengeParticipationRepository = challengeParticipationRepository;
+        this.userRepository = userRepository;
+        this.challengeRepository = challengeRepository;
     }
 
-    /**
-     * Executa a criação de uma nova participação de desafio
-     * @param user usuário participante
-     * @param challenge desafio associado
-     * @return Participação criada
-     * @throws IllegalArgumentException se dados são inválidos
-     */
-
-    public ChallengeParticipation execute (User user, Challenge challenge) {
-        // Criar participação (validações de domínio ocorrem aqui)
-        ChallengeParticipation newParticipation = ChallengeParticipation.create(user, challenge);
-
-        // Persistir participação
-        return challengeParticipationRepository.save(newParticipation);
+    public ChallengeParticipation execute(Long userId, Long challengeId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com id: " + userId));
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado com id: " + challengeId));
+        return challengeParticipationRepository.save(ChallengeParticipation.create(user, challenge));
     }
 }

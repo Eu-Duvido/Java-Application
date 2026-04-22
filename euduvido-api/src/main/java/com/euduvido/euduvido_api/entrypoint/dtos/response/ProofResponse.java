@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * DTO de response para comprovação.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,22 +19,26 @@ public class ProofResponse {
     private Double latitude;
     private Double longitude;
     private LocalDateTime submittedAt;
-    private Boolean approved;
+    private boolean approved;
+    private String rejectionReason;
+    private Boolean aiValid;
+    private Double aiConfidence;
+    private String aiReason;
 
-    /**
-     * Cria DTO a partir da entidade de domínio
-     */
     public static ProofResponse fromDomain(Proof proof) {
-        return new ProofResponse(
-                proof.getId(),
-                proof.getParticipation().getId(),
-                proof.getMediaUrl(),
-                proof.getMediaType(),
-                proof.getLatitude(),
-                proof.getLongitude(),
-                proof.getSubmittedAt(),
-                proof.getApproved()
-        );
+        ProofResponse r = new ProofResponse();
+        r.setId(proof.getId());
+        r.setParticipationId(proof.getParticipation().getId());
+        r.setMediaUrl(proof.getMediaUrl());
+        r.setMediaType(proof.getMediaType());
+        r.setLatitude(proof.getLatitude());
+        r.setLongitude(proof.getLongitude());
+        r.setSubmittedAt(proof.getSubmittedAt());
+        r.setApproved(proof.isApproved());
+        r.setRejectionReason(proof.getRejectionReason());
+        r.setAiValid(proof.getAiValid());
+        r.setAiConfidence(proof.getAiConfidence());
+        r.setAiReason(proof.getAiReason());
+        return r;
     }
 }
-

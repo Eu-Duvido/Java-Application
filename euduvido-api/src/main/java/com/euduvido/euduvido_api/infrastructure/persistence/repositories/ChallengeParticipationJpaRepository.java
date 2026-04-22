@@ -2,36 +2,22 @@ package com.euduvido.euduvido_api.infrastructure.persistence.repositories;
 
 import com.euduvido.euduvido_api.infrastructure.persistence.entities.ChallengeParticipationEntity;
 import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repositório Spring Data JPA para ChallengeParticipationEntity.
- * Fornece operações de persistência para participações.
- */
 @Repository
 public interface ChallengeParticipationJpaRepository extends JpaRepository<ChallengeParticipationEntity, Long> {
-    /**
-     * Encontrar participações de um usuário
-     */
     List<ChallengeParticipationEntity> findByUserId(Long userId);
-
-    /**
-     * Encontrar participações de um desafio
-     */
     List<ChallengeParticipationEntity> findByChallengeId(Long challengeId);
-
-    /**
-     * Encontrar participação específica de um usuário em um desafio
-     */
     Optional<ChallengeParticipationEntity> findByUserIdAndChallengeId(Long userId, Long challengeId);
-
-    /**
-     * Encontrar participações por status
-     */
     List<ChallengeParticipationEntity> findByStatus(ParticipationStatus status);
+    Page<ChallengeParticipationEntity> findByUserId(Long userId, Pageable pageable);
+    Page<ChallengeParticipationEntity> findByUserIdAndStatus(Long userId, ParticipationStatus status, Pageable pageable);
+    Page<ChallengeParticipationEntity> findByChallenge_CreatorIdAndStatus(Long creatorId, ParticipationStatus status, Pageable pageable);
 }
 

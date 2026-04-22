@@ -3,40 +3,39 @@ package com.euduvido.euduvido_api.application.usecases.challenge;
 import com.euduvido.euduvido_api.domain.entities.Challenge;
 import com.euduvido.euduvido_api.domain.enums.ChallengeStatus;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Caso de uso: Atualizar status de desafios expirados.
- * Responsabilidade: Verificar desafios e expirar os que passaram do deadline.
- */
 public class UpdateExpiredChallengesUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(UpdateExpiredChallengesUseCase.class);
+
     private final ChallengeRepository challengeRepository;
 
     public UpdateExpiredChallengesUseCase(ChallengeRepository challengeRepository) {
         this.challengeRepository = challengeRepository;
     }
 
-    /**
-     * Executa a atualização de desafios expirados
-     * Verifica todos os desafios ativos e expira os que passaram do deadline
-     * @return Lista de desafios que foram expirados
-     */
+    /** Expira todos os desafios cujo deadline já passou e ainda estão PENDING ou ACTIVE. */
     public List<Challenge> execute() {
-        // Buscar desafios ativos
-        List<Challenge> activeChallenges = challengeRepository.findByStatus(ChallengeStatus.ACTIVE);
+        List<Challenge> candidates = challengeRepository.findExpiredCandidates(
+                LocalDateTime.now(),
+                List.of(ChallengeStatus.PENDING, ChallengeStatus.ACTIVE));
 
-        // Expirar desafios que passaram do deadline
-        for (Challenge challenge : activeChallenges) {
-            if (challenge.isExpired()) {
-                challenge.expire();
-                challengeRepository.save(challenge);
-            }
+        List<Challenge> expired = candidates.stream()
+                .peek(Challenge::expire)
+                .map(challengeRepository::save)
+                .toList();
+
+        if (!expired.isEmpty()) {
+            log.info("[ExpireChallenges] {} desafio(s) expirado(s): {}",
+                    expired.size(),
+                    expired.stream().map(c -> "#" + c.getId() + " " + c.getTitle()).toList());
         }
 
-        return activeChallenges.stream()
-                .filter(Challenge::isExpired)
-                .toList();
+        return expired;
     }
 }
-

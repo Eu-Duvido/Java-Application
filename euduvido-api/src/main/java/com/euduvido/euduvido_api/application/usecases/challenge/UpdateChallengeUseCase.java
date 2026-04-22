@@ -2,15 +2,13 @@ package com.euduvido.euduvido_api.application.usecases.challenge;
 
 import com.euduvido.euduvido_api.domain.entities.Challenge;
 import com.euduvido.euduvido_api.domain.entities.User;
+import com.euduvido.euduvido_api.domain.enums.Difficulty;
+import com.euduvido.euduvido_api.domain.enums.GoalType;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 
 import java.time.LocalDateTime;
 
-/**
- * Caso de uso: Atualizar um desafio.
- * Responsabilidade: Validar dados do desafio e atualizar.
- */
 public class UpdateChallengeUseCase {
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
@@ -20,29 +18,29 @@ public class UpdateChallengeUseCase {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Executa a atualização de um desafio
-     * @param creatorId ID do usuário criador
-     * @param title Título do desafio
-     * @param description Descrição do desafio
-     * @param deadline Data limite para conclusão
-     * @param locationRequired Se localização é obrigatória
-     * @return Desafio criado
-     * @throws IllegalArgumentException se dados são inválidos
-     */
-    public Challenge execute(Long creatorId, String title, String description, LocalDateTime deadline, Boolean locationRequired) {
-        // Buscar usuário criador
+    /** Atualiza os campos fornecidos; mantém valores existentes quando o campo é null. */
+    public Challenge execute(Long challengeId, Long creatorId, String title, String description,
+                             LocalDateTime deadline, Boolean locationRequired, Difficulty difficulty,
+                             String subject, GoalType goalType, Integer goalValue) {
         User creator = userRepository.findById(creatorId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário criador não encontrado"));
-
-        // Buscar desafio existente
-        Challenge existingChallenge = challengeRepository.findById(creatorId)
+        Challenge existing = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado"));
 
-        // Criar desafio (validações de domínio ocorrem aqui)
-        Challenge newChallenge = Challenge.createFromDatabase(existingChallenge.getId(), title, description, existingChallenge.getDifficulty(), existingChallenge.getProgress(), creator, deadline, existingChallenge.getStatus(), locationRequired, existingChallenge.getCreatedAt(), existingChallenge.getParticipants());
-
-        // Persistir desafio
-        return challengeRepository.save(newChallenge);
+        Challenge updated = Challenge.createFromDatabase(
+                existing.getId(),
+                title        != null ? title        : existing.getTitle(),
+                description  != null ? description  : existing.getDescription(),
+                difficulty   != null ? difficulty   : existing.getDifficulty(),
+                subject      != null ? subject      : existing.getSubject(),
+                goalType     != null ? goalType     : existing.getGoalType(),
+                goalValue    != null ? goalValue    : existing.getGoalValue(),
+                creator,
+                deadline     != null ? deadline     : existing.getDeadline(),
+                existing.getStatus(),
+                locationRequired != null ? locationRequired : existing.getLocationRequired(),
+                existing.getCreatedAt(),
+                existing.getParticipants());
+        return challengeRepository.save(updated);
     }
 }

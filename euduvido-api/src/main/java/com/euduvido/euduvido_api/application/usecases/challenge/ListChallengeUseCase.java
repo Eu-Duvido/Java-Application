@@ -1,14 +1,12 @@
 package com.euduvido.euduvido_api.application.usecases.challenge;
 
 import com.euduvido.euduvido_api.domain.entities.Challenge;
+import com.euduvido.euduvido_api.domain.enums.ChallengeStatus;
+import com.euduvido.euduvido_api.domain.pagination.PageResult;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 
-import java.util.List;
+import java.util.Optional;
 
-/**
- * Caso de uso: Listar todos os desafios.
- * Responsabilidade: Listar todos os desafios.
- */
 public class ListChallengeUseCase {
     private final ChallengeRepository challengeRepository;
 
@@ -16,12 +14,7 @@ public class ListChallengeUseCase {
         this.challengeRepository = challengeRepository;
     }
 
-    /**
-     * Executa a listagem de todos os desafios
-     * @return List<Challenge>
-     */
-
-    public List<Challenge> execute() {
-        return challengeRepository.findAll();
+    public PageResult<Challenge> execute(Optional<ChallengeStatus> status, int page, int size) {
+        return challengeRepository.findAllPaged(status, page, size);
     }
 }

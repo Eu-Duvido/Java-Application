@@ -1,14 +1,12 @@
 package com.euduvido.euduvido_api.application.usecases.challenge;
 
 import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
+import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
+import com.euduvido.euduvido_api.domain.pagination.PageResult;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
 
-import java.util.List;
+import java.util.Optional;
 
-/**
- * Caso de uso: Listar desafios recebidos por um usuário.
- * Responsabilidade: Recuperar participações do repositório.
- */
 public class ListReceivedChallengesUseCase {
     private final ChallengeParticipationRepository participationRepository;
 
@@ -16,13 +14,7 @@ public class ListReceivedChallengesUseCase {
         this.participationRepository = participationRepository;
     }
 
-    /**
-     * Executa a listagem de desafios recebidos
-     * @param userId ID do usuário
-     * @return Lista de participações (desafios recebidos) do usuário
-     */
-    public List<ChallengeParticipation> execute(Long userId) {
-        return participationRepository.findByUserId(userId);
+    public PageResult<ChallengeParticipation> execute(Long userId, Optional<ParticipationStatus> status, int page, int size) {
+        return participationRepository.findByUserIdPaged(userId, status, page, size);
     }
 }
-

@@ -27,7 +27,7 @@ public class UpdateProofUseCase {
         Proof existing = proofRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Comprovação não encontrada"));
 
-        if (Boolean.TRUE.equals(existing.getApproved())) {
+        if (Boolean.TRUE.equals(existing.isApproved())) {
             throw new IllegalStateException("Comprovação já foi aprovada e não pode ser alterada");
         }
 

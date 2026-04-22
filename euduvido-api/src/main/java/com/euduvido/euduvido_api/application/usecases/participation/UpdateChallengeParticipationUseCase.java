@@ -5,50 +5,31 @@ import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
 import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
+import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 
-/**
- * Caso de uso: Atualizar a participação de um desafio.
- * Responsabilidade: Atualizar a participação de um desafio.
- */
 public class UpdateChallengeParticipationUseCase {
     private final ChallengeParticipationRepository participationRepository;
     private final UserRepository userRepository;
+    private final ChallengeRepository challengeRepository;
 
-    public UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository, UserRepository userRepository) {
+    public UpdateChallengeParticipationUseCase(ChallengeParticipationRepository participationRepository,
+                                               UserRepository userRepository,
+                                               ChallengeRepository challengeRepository) {
         this.participationRepository = participationRepository;
         this.userRepository = userRepository;
+        this.challengeRepository = challengeRepository;
     }
 
-    /**
-     * Executa a criação de uma nova participação de desafio
-     * @param user usuário participante
-     * @param challenge desafio associado
-     * @param status da participação
-     * @return Participação atualizaad
-     * @throws IllegalArgumentException se dados são inválidos
-     */
-
-    public ChallengeParticipation execute(Long id, User user, Challenge challenge, ParticipationStatus status) {
-        // Procura a participação existente
-        var existingParticipation = participationRepository.findById(id)
+    public ChallengeParticipation execute(Long id, Long userId, Long challengeId, ParticipationStatus status) {
+        ChallengeParticipation existing = participationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Participação não encontrada com id: " + id));
-
-        // Verifica se o usuário existe
-        if(!userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Usuário inexistente");
-        }
-
-        // Cria uma nova instância de participação com os dados atualizados
-        var updatedParticipation = ChallengeParticipation.createFromDatabase(
-                existingParticipation.getId(),
-                user,
-                challenge,
-                status,
-                existingParticipation.getLevel()
-        );
-
-        // Persiste a participação atualizada
-        return participationRepository.save(updatedParticipation);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com id: " + userId));
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado com id: " + challengeId));
+        ChallengeParticipation updated = ChallengeParticipation.createFromDatabase(
+                existing.getId(), user, challenge, status, existing.getProgress());
+        return participationRepository.save(updated);
     }
 }

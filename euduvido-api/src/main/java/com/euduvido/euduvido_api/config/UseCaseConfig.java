@@ -5,9 +5,11 @@ import com.euduvido.euduvido_api.application.usecases.*;
 import com.euduvido.euduvido_api.application.usecases.challenge.*;
 import com.euduvido.euduvido_api.application.usecases.participation.CreateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.DeleteChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.SelfJoinChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.GetProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
@@ -64,8 +66,9 @@ public class UseCaseConfig {
     @Bean
     public CreateChallengeUseCase createChallengeUseCase(ChallengeRepository challengeRepository,
                                                          UserRepository userRepository,
+                                                         ChallengeParticipationRepository challengeParticipationRepository,
                                                          AiValidationService aiValidationService) {
-        return new CreateChallengeUseCase(challengeRepository, userRepository, aiValidationService);
+        return new CreateChallengeUseCase(challengeRepository, userRepository, challengeParticipationRepository, aiValidationService);
     }
 
     @Bean
@@ -124,8 +127,9 @@ public class UseCaseConfig {
     }
 
     @Bean
-    public ApproveProofUseCase approveProofUseCase(ProofRepository proofRepository) {
-        return new ApproveProofUseCase(proofRepository);
+    public ApproveProofUseCase approveProofUseCase(ProofRepository proofRepository,
+                                                    ChallengeParticipationRepository participationRepository) {
+        return new ApproveProofUseCase(proofRepository, participationRepository);
     }
 
     @Bean
@@ -136,6 +140,11 @@ public class UseCaseConfig {
     @Bean
     public ListProofsByParticipationUseCase listProofsByParticipationUseCase(ProofRepository proofRepository) {
         return new ListProofsByParticipationUseCase(proofRepository);
+    }
+
+    @Bean
+    public ListProofsByChallengeUseCase listProofsByChallengeUseCase(ProofRepository proofRepository) {
+        return new ListProofsByChallengeUseCase(proofRepository);
     }
 
     @Bean
@@ -196,5 +205,13 @@ public class UseCaseConfig {
     @Bean
     public ListSentInvitesUseCase listSentInvitesUseCase(ChallengeParticipationRepository participationRepository) {
         return new ListSentInvitesUseCase(participationRepository);
+    }
+
+    @Bean
+    public SelfJoinChallengeUseCase selfJoinChallengeUseCase(
+            ChallengeParticipationRepository challengeParticipationRepository,
+            ChallengeRepository challengeRepository,
+            UserRepository userRepository) {
+        return new SelfJoinChallengeUseCase(challengeParticipationRepository, challengeRepository, userRepository);
     }
 }

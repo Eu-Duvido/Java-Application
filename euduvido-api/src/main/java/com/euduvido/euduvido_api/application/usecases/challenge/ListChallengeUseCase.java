@@ -14,7 +14,7 @@ public class ListChallengeUseCase {
         this.challengeRepository = challengeRepository;
     }
 
-    public PageResult<Challenge> execute(Optional<ChallengeStatus> status, int page, int size) {
-        return challengeRepository.findAllPaged(status, page, size);
+    public PageResult<Challenge> execute(Optional<ChallengeStatus> status, Optional<String> title, int page, int size) {
+        return challengeRepository.findAllPaged(status, title, page, size);
     }
 }

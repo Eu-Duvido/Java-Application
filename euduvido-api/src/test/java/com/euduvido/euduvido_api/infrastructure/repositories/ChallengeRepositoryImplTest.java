@@ -140,7 +140,7 @@ class ChallengeRepositoryImplTest {
         em.flush();
         em.clear();
 
-        PageResult<Challenge> page = challengeRepository.findAllPaged(Optional.empty(), 0, 2);
+        PageResult<Challenge> page = challengeRepository.findAllPaged(Optional.empty(), Optional.empty(), 0, 2);
 
         assertThat(page.totalElements()).isEqualTo(3);
         assertThat(page.content()).hasSize(2);
@@ -154,7 +154,7 @@ class ChallengeRepositoryImplTest {
         em.clear();
 
         PageResult<Challenge> page = challengeRepository.findAllPaged(
-                Optional.of(ChallengeStatus.PENDING), 0, 10);
+                Optional.of(ChallengeStatus.PENDING), Optional.empty(), 0, 10);
 
         assertThat(page.content()).allMatch(c -> c.getStatus() == ChallengeStatus.PENDING);
     }

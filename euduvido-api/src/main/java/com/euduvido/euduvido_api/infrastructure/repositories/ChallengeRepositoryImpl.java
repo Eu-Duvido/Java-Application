@@ -60,11 +60,20 @@ public class ChallengeRepositoryImpl implements ChallengeRepository {
     }
 
     @Override
-    public PageResult<Challenge> findAllPaged(Optional<ChallengeStatus> status, int page, int size) {
+    public PageResult<Challenge> findAllPaged(Optional<ChallengeStatus> status, Optional<String> title, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<ChallengeEntity> result = status.isPresent()
-                ? jpaRepository.findByStatus(status.get(), pageable)
-                : jpaRepository.findAll(pageable);
+        Page<ChallengeEntity> result;
+        boolean hasStatus = status.isPresent();
+        boolean hasTitle = title.isPresent() && !title.get().isBlank();
+        if (hasStatus && hasTitle) {
+            result = jpaRepository.findByStatusAndTitleContainingIgnoreCase(status.get(), title.get(), pageable);
+        } else if (hasStatus) {
+            result = jpaRepository.findByStatus(status.get(), pageable);
+        } else if (hasTitle) {
+            result = jpaRepository.findByTitleContainingIgnoreCase(title.get(), pageable);
+        } else {
+            result = jpaRepository.findAll(pageable);
+        }
         return new PageResult<>(
                 result.getContent().stream().map(ChallengeEntity::toDomain).toList(),
                 result.getTotalElements(),

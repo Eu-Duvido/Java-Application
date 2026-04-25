@@ -24,5 +24,7 @@ public interface ProofJpaRepository extends JpaRepository<ProofEntity, Long> {
      */
     @Query("SELECT p FROM ProofEntity p WHERE p.participation.id = :participationId AND p.approved = false ORDER BY p.submittedAt DESC LIMIT 1")
     Optional<ProofEntity> findPendingProofByParticipationId(Long participationId);
+
+    List<ProofEntity> findByParticipation_ChallengeId(Long challengeId);
 }
 

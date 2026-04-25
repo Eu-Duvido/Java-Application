@@ -54,15 +54,21 @@ public class Proof {
         return new Proof(id, participation, mediaUrl, mediaType, latitude, longitude, submittedAt, approved, rejectionReason, aiValid, aiConfidence, aiReason);
     }
 
-    public void approve() {
+    public void approve(Long approverId) {
         if (this.approved) throw new IllegalStateException("Comprovação já foi aprovada");
+        if (approverId != null && approverId.equals(this.participation.getUser().getId())) {
+            throw new IllegalStateException("Usuário não pode aprovar a própria evidência");
+        }
         this.approved = true;
         this.rejectionReason = null;
-        this.participation.complete();
+        this.participation.incrementProgress();
     }
 
-    public void reject(String reason) {
+    public void reject(Long rejecterId, String reason) {
         if (this.approved) throw new IllegalStateException("Comprovação já foi aprovada e não pode ser rejeitada");
+        if (rejecterId != null && rejecterId.equals(this.participation.getUser().getId())) {
+            throw new IllegalStateException("Usuário não pode rejeitar a própria evidência");
+        }
         this.rejectionReason = reason;
     }
 

@@ -5,10 +5,14 @@ import com.euduvido.euduvido_api.application.usecases.challenge.ListReceivedChal
 import com.euduvido.euduvido_api.application.usecases.challenge.RefuseChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.CreateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.DeleteChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.ListChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListSentInvitesUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.SelfJoinChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateProgressUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.domain.enums.MediaType;
 import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
@@ -31,7 +35,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/participations")
@@ -47,6 +53,10 @@ public class ParticipationController {
     private final DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase;
     private final UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase;
     private final UpdateProgressUseCase updateProgressUseCase;
+    private final ListProofsByParticipationUseCase listProofsByParticipationUseCase;
+    private final ListProofsByChallengeUseCase listProofsByChallengeUseCase;
+    private final SelfJoinChallengeUseCase selfJoinChallengeUseCase;
+    private final ListChallengeParticipationUseCase listChallengeParticipationUseCase;
 
     public ParticipationController(AcceptChallengeUseCase acceptChallengeUseCase,
                                    RefuseChallengeUseCase refuseChallengeUseCase,
@@ -57,7 +67,11 @@ public class ParticipationController {
                                    CreateChallengeParticipationUseCase createChallengeParticipationUseCase,
                                    DeleteChallengeParticipationUseCase deleteChallengeParticipationUseCase,
                                    UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase,
-                                   UpdateProgressUseCase updateProgressUseCase) {
+                                   UpdateProgressUseCase updateProgressUseCase,
+                                   ListProofsByParticipationUseCase listProofsByParticipationUseCase,
+                                   ListProofsByChallengeUseCase listProofsByChallengeUseCase,
+                                   SelfJoinChallengeUseCase selfJoinChallengeUseCase,
+                                   ListChallengeParticipationUseCase listChallengeParticipationUseCase) {
         this.acceptChallengeUseCase = acceptChallengeUseCase;
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
@@ -68,6 +82,10 @@ public class ParticipationController {
         this.deleteChallengeParticipationUseCase = deleteChallengeParticipationUseCase;
         this.updateChallengeParticipationUseCase = updateChallengeParticipationUseCase;
         this.updateProgressUseCase = updateProgressUseCase;
+        this.listProofsByParticipationUseCase = listProofsByParticipationUseCase;
+        this.listProofsByChallengeUseCase = listProofsByChallengeUseCase;
+        this.selfJoinChallengeUseCase = selfJoinChallengeUseCase;
+        this.listChallengeParticipationUseCase = listChallengeParticipationUseCase;
     }
 
     @Operation(summary = "Aceitar desafio")
@@ -189,5 +207,45 @@ public class ParticipationController {
                 request.getIdChallengeParticipation(), request.getUserId(),
                 request.getChallengeId(), request.getStatus());
         return ResponseEntity.ok(ChallengeParticipationResponse.fromDomain(updated));
+    }
+
+    @Operation(summary = "Listar participantes de um desafio, ordenados por progresso decrescente")
+    @ApiResponse(responseCode = "200", description = "Lista de participantes retornada")
+    @GetMapping("/challenge/{challengeId}")
+    public ResponseEntity<List<ChallengeParticipationResponse>> listByChallenge(@PathVariable Long challengeId) {
+        var participations = new java.util.ArrayList<>(
+                listChallengeParticipationUseCase.executeByChallengeId(challengeId));
+        participations.sort((a, b) -> Integer.compare(
+                b.getProgress() == null ? 0 : b.getProgress(),
+                a.getProgress() == null ? 0 : a.getProgress()));
+        return ResponseEntity.ok(participations.stream()
+                .map(ChallengeParticipationResponse::fromDomain)
+                .collect(Collectors.toList()));
+    }
+
+    @Operation(summary = "Criador entra no próprio desafio como participante ACCEPTED")
+    @ApiResponse(responseCode = "201", description = "Participação criada ou retornada existente")
+    @PostMapping("/self-join/{challengeId}")
+    public ResponseEntity<ChallengeParticipationResponse> selfJoin(
+            @AuthenticationPrincipal AuthUser principal,
+            @PathVariable Long challengeId) {
+        var participation = selfJoinChallengeUseCase.execute(principal.getId(), challengeId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ChallengeParticipationResponse.fromDomain(participation));
+    }
+
+    @Operation(summary = "Listar comprovações de uma participação")
+    @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada")
+    @GetMapping("/{id}/proofs")
+    public ResponseEntity<List<ProofResponse>> listProofsByParticipation(@PathVariable Long id) {
+        var proofs = listProofsByParticipationUseCase.execute(id);
+        return ResponseEntity.ok(proofs.stream().map(ProofResponse::fromDomain).collect(Collectors.toList()));
+    }
+
+    @Operation(summary = "Listar todas as comprovações de um desafio (todas as participações)")
+    @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada, ordenada por data desc")
+    @GetMapping("/challenge/{challengeId}/proofs")
+    public ResponseEntity<List<ProofResponse>> listProofsByChallenge(@PathVariable Long challengeId) {
+        var proofs = listProofsByChallengeUseCase.execute(challengeId);
+        return ResponseEntity.ok(proofs.stream().map(ProofResponse::fromDomain).collect(Collectors.toList()));
     }
 }

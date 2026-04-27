@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 public class ProofResponse {
     private Long id;
     private Long participationId;
+    private Long submittedByUserId;
+    private String submittedByUserName;
     private String mediaUrl;
     private MediaType mediaType;
     private Double latitude;
@@ -29,6 +31,8 @@ public class ProofResponse {
         ProofResponse r = new ProofResponse();
         r.setId(proof.getId());
         r.setParticipationId(proof.getParticipation().getId());
+        r.setSubmittedByUserId(proof.getParticipation().getUser().getId());
+        r.setSubmittedByUserName(proof.getParticipation().getUser().getName());
         r.setMediaUrl(proof.getMediaUrl());
         r.setMediaType(proof.getMediaType());
         r.setLatitude(proof.getLatitude());

@@ -9,6 +9,7 @@ import com.euduvido.euduvido_api.application.usecases.participation.ListSentInvi
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateProgressUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.domain.enums.MediaType;
 import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -41,6 +43,7 @@ public class ParticipationController {
     private final RefuseChallengeUseCase refuseChallengeUseCase;
     private final SubmitProofUseCase submitProofUseCase;
     private final ApproveProofUseCase approveProofUseCase;
+    private final ListProofsByChallengeUseCase listProofsByChallengeUseCase;
     private final ListReceivedChallengesUseCase listReceivedChallengesUseCase;
     private final ListSentInvitesUseCase listSentInvitesUseCase;
     private final CreateChallengeParticipationUseCase createChallengeParticipationUseCase;
@@ -52,6 +55,7 @@ public class ParticipationController {
                                    RefuseChallengeUseCase refuseChallengeUseCase,
                                    SubmitProofUseCase submitProofUseCase,
                                    ApproveProofUseCase approveProofUseCase,
+                                   ListProofsByChallengeUseCase listProofsByChallengeUseCase,
                                    ListReceivedChallengesUseCase listReceivedChallengesUseCase,
                                    ListSentInvitesUseCase listSentInvitesUseCase,
                                    CreateChallengeParticipationUseCase createChallengeParticipationUseCase,
@@ -62,12 +66,24 @@ public class ParticipationController {
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
         this.approveProofUseCase = approveProofUseCase;
+        this.listProofsByChallengeUseCase = listProofsByChallengeUseCase;
         this.listReceivedChallengesUseCase = listReceivedChallengesUseCase;
         this.listSentInvitesUseCase = listSentInvitesUseCase;
         this.createChallengeParticipationUseCase = createChallengeParticipationUseCase;
         this.deleteChallengeParticipationUseCase = deleteChallengeParticipationUseCase;
         this.updateChallengeParticipationUseCase = updateChallengeParticipationUseCase;
         this.updateProgressUseCase = updateProgressUseCase;
+    }
+
+    @Operation(summary = "Listar comprovações de todos os participantes de um desafio")
+    @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada")
+    @GetMapping("/challenge/{challengeId}/proofs")
+    public ResponseEntity<List<ProofResponse>> listProofsByChallenge(@PathVariable Long challengeId) {
+        var proofs = listProofsByChallengeUseCase.execute(challengeId)
+                .stream()
+                .map(ProofResponse::fromDomain)
+                .toList();
+        return ResponseEntity.ok(proofs);
     }
 
     @Operation(summary = "Aceitar desafio")

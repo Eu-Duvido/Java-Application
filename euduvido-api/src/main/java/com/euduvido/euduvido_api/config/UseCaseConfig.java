@@ -11,6 +11,7 @@ import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.GetProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.UpdateProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.DeleteProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListSentInvitesUseCase;
@@ -136,6 +137,11 @@ public class UseCaseConfig {
     @Bean
     public ListProofsByParticipationUseCase listProofsByParticipationUseCase(ProofRepository proofRepository) {
         return new ListProofsByParticipationUseCase(proofRepository);
+    }
+
+    @Bean
+    public ListProofsByChallengeUseCase listProofsByChallengeUseCase(ProofRepository proofRepository) {
+        return new ListProofsByChallengeUseCase(proofRepository);
     }
 
     @Bean

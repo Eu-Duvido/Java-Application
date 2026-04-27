@@ -30,10 +30,10 @@ app:
   storage:
     local:
       path: ${STORAGE_PATH:./uploads}
-  anthropic:
-    base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
-    api-key: ${ANTHROPIC_API_KEY:}
-    model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
+  gemini:
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.0-flash}
 
 springdoc:
   swagger-ui:

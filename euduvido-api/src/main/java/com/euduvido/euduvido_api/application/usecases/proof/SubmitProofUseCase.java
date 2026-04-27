@@ -51,7 +51,8 @@ public class SubmitProofUseCase {
                 String mimeType = resolveMimeType(originalFilename, mediaType);
                 String challengeTitle = participation.getChallenge().getTitle();
                 String challengeDescription = participation.getChallenge().getDescription();
-                ValidationResult result = aiValidationService.validateProofImage(fileBytes, mimeType, challengeTitle, challengeDescription);
+                ValidationResult result = aiValidationService.validateProofImage(
+                        fileBytes, mimeType, challengeTitle, challengeDescription);
                 proof.setAiValid(result.valid());
                 proof.setAiConfidence(result.confidence());
                 proof.setAiReason(result.reason());

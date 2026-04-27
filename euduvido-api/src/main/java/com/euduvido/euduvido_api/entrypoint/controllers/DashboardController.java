@@ -3,6 +3,7 @@ package com.euduvido.euduvido_api.entrypoint.controllers;
 import com.euduvido.euduvido_api.application.services.DashboardService;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.DailyPointsResponse;
+import com.euduvido.euduvido_api.entrypoint.dtos.response.EngagementMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.EvidenceMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.UserRankingResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +53,12 @@ public class DashboardController {
     @GetMapping("/evidence-metrics")
     public ResponseEntity<EvidenceMetricsResponse> getEvidenceMetrics() {
         return ResponseEntity.ok(service.getEvidenceMetrics());
+    }
+
+    @Operation(summary = "Métricas de engajamento — retenção, usuários ativos, consistência")
+    @ApiResponse(responseCode = "200", description = "KPIs de engajamento calculados sobre dados reais")
+    @GetMapping("/engagement")
+    public ResponseEntity<EngagementMetricsResponse> getEngagementMetrics() {
+        return ResponseEntity.ok(service.getEngagementMetrics());
     }
 }

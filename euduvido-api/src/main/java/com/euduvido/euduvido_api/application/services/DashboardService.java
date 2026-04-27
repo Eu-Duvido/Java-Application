@@ -2,6 +2,7 @@ package com.euduvido.euduvido_api.application.services;
 
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.DailyPointsResponse;
+import com.euduvido.euduvido_api.entrypoint.dtos.response.EngagementMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.EvidenceMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.UserRankingResponse;
 import com.euduvido.euduvido_api.infrastructure.dashboard.DashboardRepository;
@@ -32,5 +33,9 @@ public class DashboardService {
 
     public EvidenceMetricsResponse getEvidenceMetrics() {
         return repository.findEvidenceMetrics();
+    }
+
+    public EngagementMetricsResponse getEngagementMetrics() {
+        return repository.findEngagementMetrics();
     }
 }

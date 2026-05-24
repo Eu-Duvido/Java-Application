@@ -20,6 +20,11 @@ public interface ProofJpaRepository extends JpaRepository<ProofEntity, Long> {
     List<ProofEntity> findByParticipationId(Long participationId);
 
     /**
+     * Encontrar comprovações de todos os participantes de um desafio
+     */
+    List<ProofEntity> findByParticipation_Challenge_Id(Long challengeId);
+
+    /**
      * Encontrar comprovação não aprovada de uma participação
      */
     @Query("SELECT p FROM ProofEntity p WHERE p.participation.id = :participationId AND p.approved = false ORDER BY p.submittedAt DESC LIMIT 1")

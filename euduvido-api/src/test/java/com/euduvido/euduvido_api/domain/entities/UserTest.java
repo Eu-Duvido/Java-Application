@@ -28,7 +28,6 @@ class UserTest {
         assertEquals(password, user.getPassword());
         assertEquals(profileImageUrl, user.getProfileImageUrl());
         assertNull(user.getId()); // Novo usuário ainda não tem ID
-        assertNotNull(user.getCreatedAt());
     }
 
     @Test

@@ -1,19 +1,18 @@
 package com.euduvido.euduvido_api.infrastructure.repositories;
 
 import com.euduvido.euduvido_api.domain.entities.User;
+import com.euduvido.euduvido_api.domain.pagination.PageResult;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 import com.euduvido.euduvido_api.infrastructure.persistence.entities.UserEntity;
 import com.euduvido.euduvido_api.infrastructure.persistence.repositories.UserJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Implementação do repositório de domínio UserRepository.
- * Adapta o Spring Data JPA para o contrato do domínio.
- * A dependência SEMPRE aponta para dentro (domain não depende de infrastructure).
- */
 @Component
 public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository jpaRepository;
@@ -24,9 +23,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User save(User user) {
-        UserEntity entity = UserEntity.fromDomain(user);
-        UserEntity saved = jpaRepository.save(entity);
-        return saved.toDomain();
+        return jpaRepository.save(UserEntity.fromDomain(user)).toDomain();
     }
 
     @Override
@@ -51,11 +48,20 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        List<UserEntity> usersEntity = jpaRepository.findAll();
+        return jpaRepository.findAll().stream().map(UserEntity::toDomain).toList();
+    }
 
-        return usersEntity.stream()
-                .map(UserEntity::toDomain)
-                .toList();
+    @Override
+    public PageResult<User> findAllPaged(int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        Page<UserEntity> result = jpaRepository.findAll(pageable);
+        return new PageResult<>(
+                result.getContent().stream().map(UserEntity::toDomain).toList(),
+                result.getTotalElements(),
+                result.getTotalPages(),
+                result.getNumber(),
+                result.getSize()
+        );
     }
 }
 

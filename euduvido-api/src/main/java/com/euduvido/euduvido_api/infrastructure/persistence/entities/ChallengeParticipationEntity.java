@@ -7,12 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
-/**
- * Entidade JPA que mapeia a tabela de participações em desafios.
- * Representa o mapeamento técnico da entidade de domínio ChallengeParticipation.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,33 +29,20 @@ public class ChallengeParticipationEntity {
     @Column(nullable = false)
     private ParticipationStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "progress", nullable = false)
+    private Integer progress = 0;
 
-    /**
-     * Converte entidade JPA para entidade de domínio
-     */
     public ChallengeParticipation toDomain() {
-        return ChallengeParticipation.createFromDatabase(
-                id,
-                user.toDomain(),
-                challenge.toDomain(),
-                status,
-                createdAt
-        );
+        return ChallengeParticipation.createFromDatabase(id, user.toDomain(), challenge.toDomain(), status, progress);
     }
 
-    /**
-     * Cria entidade JPA a partir de entidade de domínio
-     */
     public static ChallengeParticipationEntity fromDomain(ChallengeParticipation participation) {
         ChallengeParticipationEntity entity = new ChallengeParticipationEntity();
         entity.setId(participation.getId());
         entity.setUser(UserEntity.fromDomain(participation.getUser()));
         entity.setChallenge(ChallengeEntity.fromDomain(participation.getChallenge()));
         entity.setStatus(participation.getStatus());
-        entity.setCreatedAt(participation.getCreatedAt());
+        entity.setProgress(participation.getProgress() == null ? 0 : participation.getProgress());
         return entity;
     }
 }
-

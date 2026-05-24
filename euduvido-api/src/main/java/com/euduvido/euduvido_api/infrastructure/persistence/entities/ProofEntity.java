@@ -9,10 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * Entidade JPA que mapeia a tabela de comprovações de desafios.
- * Representa o mapeamento técnico da entidade de domínio Proof.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,28 +39,26 @@ public class ProofEntity {
     @Column(name = "submitted_at", nullable = false, updatable = false)
     private LocalDateTime submittedAt;
 
-    @Column(name = "approved")
-    private Boolean approved;
+    @Column(name = "approved", nullable = false)
+    private boolean approved;
 
-    /**
-     * Converte entidade JPA para entidade de domínio
-     */
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "ai_valid")
+    private Boolean aiValid;
+
+    @Column(name = "ai_confidence")
+    private Double aiConfidence;
+
+    @Column(name = "ai_reason", columnDefinition = "TEXT")
+    private String aiReason;
+
     public Proof toDomain() {
-        return Proof.createFromDatabase(
-                id,
-                participation.toDomain(),
-                mediaUrl,
-                mediaType,
-                latitude,
-                longitude,
-                submittedAt,
-                approved
-        );
+        return Proof.createFromDatabase(id, participation.toDomain(), mediaUrl, mediaType,
+                latitude, longitude, submittedAt, approved, rejectionReason, aiValid, aiConfidence, aiReason);
     }
 
-    /**
-     * Cria entidade JPA a partir de entidade de domínio
-     */
     public static ProofEntity fromDomain(Proof proof) {
         ProofEntity entity = new ProofEntity();
         entity.setId(proof.getId());
@@ -74,8 +68,11 @@ public class ProofEntity {
         entity.setLatitude(proof.getLatitude());
         entity.setLongitude(proof.getLongitude());
         entity.setSubmittedAt(proof.getSubmittedAt());
-        entity.setApproved(proof.getApproved());
+        entity.setApproved(proof.isApproved());
+        entity.setRejectionReason(proof.getRejectionReason());
+        entity.setAiValid(proof.getAiValid());
+        entity.setAiConfidence(proof.getAiConfidence());
+        entity.setAiReason(proof.getAiReason());
         return entity;
     }
 }
-

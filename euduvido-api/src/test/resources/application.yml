@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;NON_KEYWORDS=VALUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+
+jwt:
+  secret: test-jwt-secret-key-must-be-32-bytes!
+  expiration-ms: 86400000
+
+app:
+  storage:
+    local:
+      path: ./test-uploads
+  anthropic:
+    base-url: https://api.anthropic.com
+    api-key: ""
+    model: claude-haiku-4-5-20251001

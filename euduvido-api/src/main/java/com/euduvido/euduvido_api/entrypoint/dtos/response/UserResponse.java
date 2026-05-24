@@ -19,7 +19,6 @@ public class UserResponse {
     private String name;
     private String email;
     private String profileImageUrl;
-    private LocalDateTime createdAt;
 
     /**
      * Cria DTO a partir da entidade de domínio
@@ -29,8 +28,7 @@ public class UserResponse {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getProfileImageUrl(),
-                user.getCreatedAt()
+                user.getProfileImageUrl()
         );
     }
 }

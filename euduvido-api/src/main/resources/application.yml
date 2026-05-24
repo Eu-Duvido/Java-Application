@@ -31,9 +31,9 @@ app:
     local:
       path: ${STORAGE_PATH:./uploads}
   gemini:
-    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
-    api-key: ${GEMINI_API_KEY:}
-    model: ${GEMINI_MODEL:gemini-2.0-flash}
+    base-url: https://generativelanguage.googleapis.com
+    api-key: AIzaSyAc5gVCdsU5tVgcsD5XEUbtpnjioHvkyv4
+    model: gemini-flash-latest
 
 springdoc:
   swagger-ui:

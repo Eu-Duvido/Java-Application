@@ -1,6 +1,7 @@
 package com.euduvido.euduvido_api.infrastructure.ai;
 
 import com.euduvido.euduvido_api.application.services.AiValidationService;
+import com.euduvido.euduvido_api.application.services.EvidenceValidationResult;
 import com.euduvido.euduvido_api.application.services.ValidationResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,13 +70,13 @@ public class GeminiValidationService implements AiValidationService {
     }
 
     @Override
-    public ValidationResult validateProofImage(byte[] fileBytes, String mimeType, String challengeTitle, String challengeDescription) {
+    public EvidenceValidationResult validateProofImage(byte[] fileBytes, String mimeType, String challengeTitle, String challengeDescription) {
         if (apiKey == null || apiKey.isBlank()) {
-            return bypass("API key não configurada");
+            return new EvidenceValidationResult(200, "study_evidence", "API key não configurada", true);
         }
         if (fileBytes.length > MAX_INLINE_BYTES) {
             log.warn("Arquivo de {} bytes excede o limite inline do Gemini ({})", fileBytes.length, MAX_INLINE_BYTES);
-            return bypass("Arquivo muito grande para validação automática");
+            return new EvidenceValidationResult(200, "study_evidence", "Arquivo muito grande para validação automática", true);
         }
         try {
             String systemInstruction = loadPrompt("prompts/validate_proof.txt");
@@ -88,20 +89,39 @@ public class GeminiValidationService implements AiValidationService {
                     Map.of("text", userMessage)
             );
 
-            String response = callGemini(parts, systemInstruction, proofSchema());
-            return parseResult(response);
+            String response = callGemini(parts, systemInstruction, evidenceSchema());
+            return parseEvidenceResult(response);
         } catch (WebClientResponseException e) {
             log.error("Gemini API error {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
-            return bypass("Validação IA indisponível");
+            throw new RuntimeException("Erro ao validar imagem com IA", e);
         } catch (Exception e) {
             log.warn("Falha na validação IA da prova: {}", e.getMessage());
-            return bypass("Validação IA indisponível");
+            throw new RuntimeException("Erro ao validar imagem com IA: " + e.getMessage(), e);
         }
     }
 
     @Override
     public ValidationResult validateProofLocation(Double latitude, Double longitude, String challengeTitle) {
         return bypass("Validação de localização não implementada via IA");
+    }
+
+    @Override
+    public EvidenceValidationResult validateEvidenceContent(String content) {
+        if (apiKey == null || apiKey.isBlank()) {
+            return new EvidenceValidationResult(200, "study_evidence", "Validação IA indisponível", true);
+        }
+        try {
+            String systemInstruction = loadPrompt("prompts/validate_evidence.txt");
+            List<Map<String, Object>> parts = List.of(Map.of("text", content != null ? content : ""));
+            String response = callGemini(parts, systemInstruction, evidenceSchema());
+            return parseEvidenceResult(response);
+        } catch (WebClientResponseException e) {
+            log.error("Gemini API error {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Erro ao validar evidência com IA", e);
+        } catch (Exception e) {
+            log.warn("Falha na validação IA de evidência: {}", e.getMessage());
+            throw new RuntimeException("Erro ao validar evidência com IA: " + e.getMessage(), e);
+        }
     }
 
     // ─── Gemini HTTP call ────────────────────────────────────────────────────────
@@ -122,8 +142,8 @@ public class GeminiValidationService implements AiValidationService {
         return webClient.post()
                 .uri(uri -> uri
                         .path("/v1beta/models/" + model + ":generateContent")
-                        .queryParam("key", apiKey)
                         .build())
+                .header("X-goog-api-key", apiKey)
                 .bodyValue(body)
                 .retrieve()
                 .bodyToMono(String.class)
@@ -132,6 +152,31 @@ public class GeminiValidationService implements AiValidationService {
     }
 
     // ─── Response parsing ────────────────────────────────────────────────────────
+
+    private EvidenceValidationResult parseEvidenceResult(String responseJson) throws Exception {
+        JsonNode root = objectMapper.readTree(responseJson);
+
+        JsonNode candidates = root.path("candidates");
+        if (!candidates.isArray() || candidates.isEmpty()) {
+            String blockReason = root.path("promptFeedback").path("blockReason").asText("unknown");
+            log.warn("Gemini retornou sem candidatos. blockReason={}", blockReason);
+            throw new RuntimeException("Resposta bloqueada pelo Gemini: " + blockReason);
+        }
+
+        String text = candidates.get(0).path("content").path("parts").get(0).path("text").asText();
+        log.debug("Gemini evidence raw response: {}", text);
+
+        JsonNode result = objectMapper.readTree(text);
+        int status = result.path("status").asInt(400);
+        String category = result.path("category").asText("not_study_related");
+        String message = result.path("message").asText("Conteúdo não classificado");
+
+        // Garante que apenas os status permitidos são retornados e que isValid é consistente
+        if (status != 200 && status != 400 && status != 450) status = 400;
+        boolean isValid = (status == 200);
+
+        return new EvidenceValidationResult(status, category, message, isValid);
+    }
 
     private ValidationResult parseResult(String responseJson) throws Exception {
         JsonNode root = objectMapper.readTree(responseJson);
@@ -161,6 +206,20 @@ public class GeminiValidationService implements AiValidationService {
 
     // ─── Response schemas (enforced server-side by Gemini) ───────────────────────
 
+    private Map<String, Object> evidenceSchema() {
+        Map<String, Object> properties = new LinkedHashMap<>();
+        properties.put("status", Map.of("type", "INTEGER"));
+        properties.put("category", Map.of("type", "STRING"));
+        properties.put("message", Map.of("type", "STRING"));
+        properties.put("isValid", Map.of("type", "BOOLEAN"));
+
+        return Map.of(
+                "type", "OBJECT",
+                "required", List.of("status", "category", "message", "isValid"),
+                "properties", properties
+        );
+    }
+
     private Map<String, Object> challengeSchema() {
         Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("valid", Map.of("type", "BOOLEAN"));
@@ -171,24 +230,6 @@ public class GeminiValidationService implements AiValidationService {
         return Map.of(
                 "type", "OBJECT",
                 "required", List.of("valid", "confidence", "reason", "issues"),
-                "properties", properties
-        );
-    }
-
-    private Map<String, Object> proofSchema() {
-        Map<String, Object> arrayOfStrings = Map.of("type", "ARRAY", "items", Map.of("type", "STRING"));
-
-        Map<String, Object> properties = new LinkedHashMap<>();
-        properties.put("valid", Map.of("type", "BOOLEAN"));
-        properties.put("confidence", Map.of("type", "NUMBER"));
-        properties.put("reason", Map.of("type", "STRING"));
-        properties.put("group_a", arrayOfStrings);
-        properties.put("group_b", arrayOfStrings);
-        properties.put("issues", arrayOfStrings);
-
-        return Map.of(
-                "type", "OBJECT",
-                "required", List.of("valid", "confidence", "reason", "group_a", "group_b", "issues"),
                 "properties", properties
         );
     }

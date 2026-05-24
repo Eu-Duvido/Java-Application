@@ -5,6 +5,7 @@ import com.euduvido.euduvido_api.application.usecases.*;
 import com.euduvido.euduvido_api.application.usecases.challenge.*;
 import com.euduvido.euduvido_api.application.usecases.participation.CreateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.DeleteChallengeParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.participation.SelfJoinChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
@@ -202,5 +203,13 @@ public class UseCaseConfig {
     @Bean
     public ListSentInvitesUseCase listSentInvitesUseCase(ChallengeParticipationRepository participationRepository) {
         return new ListSentInvitesUseCase(participationRepository);
+    }
+
+    @Bean
+    public SelfJoinChallengeUseCase selfJoinChallengeUseCase(
+            ChallengeParticipationRepository participationRepository,
+            ChallengeRepository challengeRepository,
+            UserRepository userRepository) {
+        return new SelfJoinChallengeUseCase(participationRepository, challengeRepository, userRepository);
     }
 }

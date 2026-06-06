@@ -1,6 +1,8 @@
 package com.euduvido.euduvido_api.exception;
 
 import com.euduvido.euduvido_api.application.exception.AiValidationException;
+import com.euduvido.euduvido_api.application.exception.EvidenceValidationException;
+import com.euduvido.euduvido_api.application.services.EvidenceValidationResult;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +99,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                 ErrorResponse.of(HttpStatus.FORBIDDEN, "FORBIDDEN", "Acesso negado"));
+    }
+
+    /** Conteúdo de evidência inválido (400) ou impróprio (450) */
+    @ExceptionHandler(EvidenceValidationException.class)
+    public ResponseEntity<EvidenceValidationResult> handleEvidenceValidation(EvidenceValidationException ex) {
+        return ResponseEntity.status(ex.getResult().status()).body(ex.getResult());
     }
 
     /** Rejeição da validação IA → 422 */

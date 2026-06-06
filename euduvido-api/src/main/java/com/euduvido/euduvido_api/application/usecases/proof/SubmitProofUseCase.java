@@ -1,23 +1,21 @@
 package com.euduvido.euduvido_api.application.usecases.proof;
 
+import com.euduvido.euduvido_api.application.exception.EvidenceValidationException;
 import com.euduvido.euduvido_api.application.services.AiValidationService;
+import com.euduvido.euduvido_api.application.services.EvidenceValidationResult;
 import com.euduvido.euduvido_api.application.services.FileStorageService;
 import com.euduvido.euduvido_api.application.services.StoredFile;
-import com.euduvido.euduvido_api.application.services.ValidationResult;
 import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
 import com.euduvido.euduvido_api.domain.entities.Proof;
 import com.euduvido.euduvido_api.domain.enums.MediaType;
 import com.euduvido.euduvido_api.domain.enums.ParticipationStatus;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
 import com.euduvido.euduvido_api.domain.repositories.ProofRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Caso de uso: Submeter comprovação de um desafio via upload de arquivo.
  */
 public class SubmitProofUseCase {
-    private static final Logger log = LoggerFactory.getLogger(SubmitProofUseCase.class);
 
     private final ProofRepository proofRepository;
     private final ChallengeParticipationRepository participationRepository;
@@ -35,7 +33,7 @@ public class SubmitProofUseCase {
     }
 
     public Proof execute(Long participationId, byte[] fileBytes, String originalFilename,
-                         MediaType mediaType, Double latitude, Double longitude) {
+                         MediaType mediaType, Double latitude, Double longitude, String description) {
         ChallengeParticipation participation = participationRepository.findById(participationId)
                 .orElseThrow(() -> new IllegalArgumentException("Participação não encontrada"));
 
@@ -43,21 +41,35 @@ public class SubmitProofUseCase {
             throw new IllegalStateException("Só é possível enviar comprovação em participações aceitas");
         }
 
+        // Valida o texto descritivo antes de qualquer operação de I/O
+        // Conteúdo impróprio (450) bloqueia o envio; não relacionado a estudos (400) salva com aiValid=false
+        if (description != null && !description.isBlank()) {
+            EvidenceValidationResult textResult = aiValidationService.validateEvidenceContent(description);
+            if (textResult.status() == 450) {
+                throw new EvidenceValidationException(textResult);
+            }
+        }
+
+        // Valida a imagem/vídeo ANTES de armazenar o arquivo
+        // Conteúdo impróprio (450) bloqueia o envio; não relacionado a estudos (400) salva com aiValid=false
+        EvidenceValidationResult imageResult = null;
+        if (mediaType == MediaType.PHOTO || mediaType == MediaType.VIDEO) {
+            String mimeType = resolveMimeType(originalFilename, mediaType);
+            imageResult = aiValidationService.validateProofImage(
+                    fileBytes, mimeType,
+                    participation.getChallenge().getTitle(),
+                    participation.getChallenge().getDescription());
+            if (imageResult.status() == 450) {
+                throw new EvidenceValidationException(imageResult);
+            }
+        }
+
         StoredFile stored = fileStorageService.store(fileBytes, originalFilename);
         Proof proof = Proof.create(participation, stored.url(), mediaType, latitude, longitude);
 
-        if (mediaType == MediaType.PHOTO || mediaType == MediaType.VIDEO) {
-            try {
-                String mimeType = resolveMimeType(originalFilename, mediaType);
-                String challengeTitle = participation.getChallenge().getTitle();
-                String challengeDescription = participation.getChallenge().getDescription();
-                ValidationResult result = aiValidationService.validateProofImage(fileBytes, mimeType, challengeTitle, challengeDescription);
-                proof.setAiValid(result.valid());
-                proof.setAiConfidence(result.confidence());
-                proof.setAiReason(result.reason());
-            } catch (Exception e) {
-                log.warn("Validação IA da prova falhou, seguindo sem resultado: {}", e.getMessage());
-            }
+        if (imageResult != null) {
+            proof.setAiValid(imageResult.isValid());
+            proof.setAiReason(imageResult.message());
         }
 
         return proofRepository.save(proof);

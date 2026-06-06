@@ -13,6 +13,7 @@ import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChalleng
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.GetProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.UpdateProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.DeleteProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListSentInvitesUseCase;

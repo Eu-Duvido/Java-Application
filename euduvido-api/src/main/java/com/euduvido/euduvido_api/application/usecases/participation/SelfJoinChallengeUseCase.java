@@ -7,12 +7,7 @@ import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepos
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 
-/**
- * Cria (ou retorna existente) uma participação ACCEPTED para o próprio criador do desafio.
- * Necessário para desafios criados antes da criação automática de participação.
- */
 public class SelfJoinChallengeUseCase {
-
     private final ChallengeParticipationRepository participationRepository;
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
@@ -26,14 +21,18 @@ public class SelfJoinChallengeUseCase {
     }
 
     public ChallengeParticipation execute(Long userId, Long challengeId) {
-        return participationRepository
-                .findByUserIdAndChallengeId(userId, challengeId)
-                .orElseGet(() -> {
-                    User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-                    Challenge challenge = challengeRepository.findById(challengeId)
-                            .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado"));
-                    return participationRepository.save(ChallengeParticipation.createForCreator(user, challenge));
-                });
+        var existing = participationRepository.findByUserIdAndChallengeId(userId, challengeId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com id: " + userId));
+        var challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new IllegalArgumentException("Desafio não encontrado com id: " + challengeId));
+
+        var participation = ChallengeParticipation.create(user, challenge);
+        participation.accept();
+        return participationRepository.save(participation);
     }
 }

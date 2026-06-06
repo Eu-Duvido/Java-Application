@@ -47,6 +47,7 @@ public class ParticipationController {
     private final RefuseChallengeUseCase refuseChallengeUseCase;
     private final SubmitProofUseCase submitProofUseCase;
     private final ApproveProofUseCase approveProofUseCase;
+    private final ListProofsByChallengeUseCase listProofsByChallengeUseCase;
     private final ListReceivedChallengesUseCase listReceivedChallengesUseCase;
     private final ListSentInvitesUseCase listSentInvitesUseCase;
     private final CreateChallengeParticipationUseCase createChallengeParticipationUseCase;
@@ -62,6 +63,7 @@ public class ParticipationController {
                                    RefuseChallengeUseCase refuseChallengeUseCase,
                                    SubmitProofUseCase submitProofUseCase,
                                    ApproveProofUseCase approveProofUseCase,
+                                   ListProofsByChallengeUseCase listProofsByChallengeUseCase,
                                    ListReceivedChallengesUseCase listReceivedChallengesUseCase,
                                    ListSentInvitesUseCase listSentInvitesUseCase,
                                    CreateChallengeParticipationUseCase createChallengeParticipationUseCase,
@@ -76,12 +78,25 @@ public class ParticipationController {
         this.refuseChallengeUseCase = refuseChallengeUseCase;
         this.submitProofUseCase = submitProofUseCase;
         this.approveProofUseCase = approveProofUseCase;
+        this.listProofsByChallengeUseCase = listProofsByChallengeUseCase;
         this.listReceivedChallengesUseCase = listReceivedChallengesUseCase;
         this.listSentInvitesUseCase = listSentInvitesUseCase;
         this.createChallengeParticipationUseCase = createChallengeParticipationUseCase;
         this.deleteChallengeParticipationUseCase = deleteChallengeParticipationUseCase;
         this.updateChallengeParticipationUseCase = updateChallengeParticipationUseCase;
         this.updateProgressUseCase = updateProgressUseCase;
+        this.selfJoinChallengeUseCase = selfJoinChallengeUseCase;
+    }
+
+    @Operation(summary = "Listar comprovações de todos os participantes de um desafio")
+    @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada")
+    @GetMapping("/challenge/{challengeId}/proofs")
+    public ResponseEntity<List<ProofResponse>> listProofsByChallenge(@PathVariable Long challengeId) {
+        var proofs = listProofsByChallengeUseCase.execute(challengeId)
+                .stream()
+                .map(ProofResponse::fromDomain)
+                .toList();
+        return ResponseEntity.ok(proofs);
         this.listProofsByParticipationUseCase = listProofsByParticipationUseCase;
         this.listProofsByChallengeUseCase = listProofsByChallengeUseCase;
         this.selfJoinChallengeUseCase = selfJoinChallengeUseCase;
@@ -108,11 +123,13 @@ public class ParticipationController {
         return ResponseEntity.ok(ChallengeParticipationResponse.fromDomain(refuseChallengeUseCase.execute(id)));
     }
 
-    @Operation(summary = "Enviar comprovação", description = "Upload multipart de foto/vídeo ou verificação de localização")
+    @Operation(summary = "Enviar comprovação",
+            description = "Upload multipart de foto/vídeo. O campo 'description' opcional é validado por IA: retorna 400 se não for conteúdo de estudo, 450 se for impróprio.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Comprovação enviada"),
-            @ApiResponse(responseCode = "400", description = "Arquivo ausente ou tipo inválido"),
-            @ApiResponse(responseCode = "409", description = "Participação não está em ACCEPTED")
+            @ApiResponse(responseCode = "400", description = "Conteúdo sem relação com estudos"),
+            @ApiResponse(responseCode = "409", description = "Participação não está em ACCEPTED"),
+            @ApiResponse(responseCode = "450", description = "Conteúdo impróprio ou inadequado para a plataforma")
     })
     @PostMapping(value = "/{id}/proof", consumes = "multipart/form-data")
     public ResponseEntity<ProofResponse> submitProof(
@@ -120,9 +137,10 @@ public class ParticipationController {
             @RequestPart("file") MultipartFile file,
             @RequestParam MediaType mediaType,
             @RequestParam(required = false) Double latitude,
-            @RequestParam(required = false) Double longitude) throws IOException {
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) String description) throws IOException {
         var proof = submitProofUseCase.execute(
-                id, file.getBytes(), file.getOriginalFilename(), mediaType, latitude, longitude);
+                id, file.getBytes(), file.getOriginalFilename(), mediaType, latitude, longitude, description);
         return ResponseEntity.status(HttpStatus.CREATED).body(ProofResponse.fromDomain(proof));
     }
 
@@ -173,6 +191,20 @@ public class ParticipationController {
             @RequestParam(defaultValue = "20") int size) {
         var result = listSentInvitesUseCase.execute(principal.getId(), page, size);
         return ResponseEntity.ok(PageResponse.fromDomain(result, ChallengeParticipationResponse::fromDomain));
+    }
+
+    @Operation(summary = "Criador entra no próprio desafio",
+            description = "Cria ou retorna uma participação ACCEPTED para o usuário autenticado no desafio informado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Participação retornada ou criada"),
+            @ApiResponse(responseCode = "404", description = "Desafio não encontrado")
+    })
+    @PostMapping("/self-join/{challengeId}")
+    public ResponseEntity<ChallengeParticipationResponse> selfJoin(
+            @PathVariable Long challengeId,
+            @AuthenticationPrincipal AuthUser principal) {
+        var participation = selfJoinChallengeUseCase.execute(principal.getId(), challengeId);
+        return ResponseEntity.ok(ChallengeParticipationResponse.fromDomain(participation));
     }
 
     @Operation(summary = "Criar participação diretamente")

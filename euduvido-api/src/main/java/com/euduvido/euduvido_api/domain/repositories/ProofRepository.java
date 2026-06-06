@@ -26,6 +26,11 @@ public interface ProofRepository {
     List<Proof> findByParticipationId(Long participationId);
 
     /**
+     * Listar comprovações de todos os participantes de um desafio
+     */
+    List<Proof> findByChallengeId(Long challengeId);
+
+    /**
      * Encontrar comprovação não aprovada de uma participação (última submetida)
      */
     Optional<Proof> findPendingProofByParticipationId(Long participationId);

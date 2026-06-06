@@ -76,9 +76,11 @@ public class ChallengeController {
     @GetMapping
     public ResponseEntity<PageResponse<ChallengeResponse>> listChallenges(
             @RequestParam(required = false) ChallengeStatus status,
+            @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        var result = listChallengeUseCase.execute(Optional.ofNullable(status), page, size);
+        var result = listChallengeUseCase.execute(
+                Optional.ofNullable(status), Optional.ofNullable(title), page, size);
         return ResponseEntity.ok(PageResponse.fromDomain(result, ChallengeResponse::fromDomain));
     }
 

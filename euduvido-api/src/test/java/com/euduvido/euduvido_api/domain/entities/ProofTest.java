@@ -57,9 +57,9 @@ class ProofTest {
     }
 
     @Test
-    void approve_marksApprovedAndCompletesParticipation() {
+    void approve_marksApprovedAndIncrementsProgress() {
         Proof proof = Proof.create(acceptedParticipation, "http://cdn/img.jpg", MediaType.PHOTO, null, null);
-        proof.approve();
+        proof.approve(99L); // approver is a different user (participant is 1L)
         assertTrue(proof.isApproved());
         assertNull(proof.getRejectionReason());
     }
@@ -67,14 +67,20 @@ class ProofTest {
     @Test
     void approve_throwsWhenAlreadyApproved() {
         Proof proof = Proof.create(acceptedParticipation, "http://cdn/img.jpg", MediaType.PHOTO, null, null);
-        proof.approve();
-        assertThrows(IllegalStateException.class, proof::approve);
+        proof.approve(99L);
+        assertThrows(IllegalStateException.class, () -> proof.approve(99L));
+    }
+
+    @Test
+    void approve_throwsWhenSelfApproval() {
+        Proof proof = Proof.create(acceptedParticipation, "http://cdn/img.jpg", MediaType.PHOTO, null, null);
+        assertThrows(IllegalStateException.class, () -> proof.approve(1L)); // participant is user 1L
     }
 
     @Test
     void reject_setsRejectionReason() {
         Proof proof = Proof.create(acceptedParticipation, "http://cdn/img.jpg", MediaType.PHOTO, null, null);
-        proof.reject("Imagem ilegível");
+        proof.reject(99L, "Imagem ilegível");
         assertEquals("Imagem ilegível", proof.getRejectionReason());
         assertFalse(proof.isApproved());
     }
@@ -82,8 +88,8 @@ class ProofTest {
     @Test
     void reject_throwsWhenAlreadyApproved() {
         Proof proof = Proof.create(acceptedParticipation, "http://cdn/img.jpg", MediaType.PHOTO, null, null);
-        proof.approve();
-        assertThrows(IllegalStateException.class, () -> proof.reject("too late"));
+        proof.approve(99L);
+        assertThrows(IllegalStateException.class, () -> proof.reject(99L, "too late"));
     }
 
     @Test

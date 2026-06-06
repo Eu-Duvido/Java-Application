@@ -26,6 +26,12 @@ public class ChallengeParticipation {
         return new ChallengeParticipation(null, user, challenge, ParticipationStatus.INVITED, 0);
     }
 
+    public static ChallengeParticipation createForCreator(User user, Challenge challenge) {
+        if (user == null) throw new IllegalArgumentException("Participação deve ter um usuário");
+        if (challenge == null) throw new IllegalArgumentException("Participação deve estar associada a um desafio");
+        return new ChallengeParticipation(null, user, challenge, ParticipationStatus.ACCEPTED, 0);
+    }
+
     public static ChallengeParticipation createFromDatabase(Long id, User user, Challenge challenge,
                                                              ParticipationStatus status, Integer progress) {
         return new ChallengeParticipation(id, user, challenge, status, progress == null ? 0 : progress);
@@ -50,6 +56,17 @@ public class ChallengeParticipation {
             throw new IllegalStateException("Apenas desafios aceitos podem ser completados");
         }
         this.status = ParticipationStatus.COMPLETED;
+    }
+
+    public void incrementProgress() {
+        if (this.status != ParticipationStatus.ACCEPTED && this.status != ParticipationStatus.COMPLETED) {
+            throw new IllegalStateException("Só é possível incrementar progresso em participações aceitas");
+        }
+        this.progress = (this.progress == null ? 0 : this.progress) + 1;
+        Integer goalValue = this.challenge.getGoalValue();
+        if (goalValue != null && this.progress >= goalValue && this.status == ParticipationStatus.ACCEPTED) {
+            this.status = ParticipationStatus.COMPLETED;
+        }
     }
 
     public void updateProgress(Integer newProgress) {

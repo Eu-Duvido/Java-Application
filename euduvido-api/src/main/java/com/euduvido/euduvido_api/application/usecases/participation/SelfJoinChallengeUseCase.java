@@ -1,6 +1,8 @@
 package com.euduvido.euduvido_api.application.usecases.participation;
 
+import com.euduvido.euduvido_api.domain.entities.Challenge;
 import com.euduvido.euduvido_api.domain.entities.ChallengeParticipation;
+import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;

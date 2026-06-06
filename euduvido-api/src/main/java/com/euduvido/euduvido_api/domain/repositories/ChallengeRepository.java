@@ -16,8 +16,8 @@ public interface ChallengeRepository {
     void deleteById(Long id);
     List<Challenge> findAll();
 
-    /** Lista paginada com filtro opcional de status. Ordena por createdAt desc. */
-    PageResult<Challenge> findAllPaged(Optional<ChallengeStatus> status, int page, int size);
+    /** Lista paginada com filtro opcional de status e busca opcional por título. Ordena por createdAt desc. */
+    PageResult<Challenge> findAllPaged(Optional<ChallengeStatus> status, Optional<String> title, int page, int size);
 
     /** Retorna desafios cujo deadline já passou e ainda estão em um dos status fornecidos. */
     List<Challenge> findExpiredCandidates(LocalDateTime before, List<ChallengeStatus> statuses);

@@ -1,36 +1,24 @@
 package com.euduvido.euduvido_api.application.usecases.proof;
 
 import com.euduvido.euduvido_api.domain.entities.Proof;
+import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
 import com.euduvido.euduvido_api.domain.repositories.ProofRepository;
 
-/**
- * Caso de uso: Aprovar comprovação de um desafio.
- * Responsabilidade: Marcar comprovação como aprovada e atualizar status da participação.
- */
 public class ApproveProofUseCase {
     private final ProofRepository proofRepository;
+    private final ChallengeParticipationRepository participationRepository;
 
-    public ApproveProofUseCase(ProofRepository proofRepository) {
+    public ApproveProofUseCase(ProofRepository proofRepository,
+                               ChallengeParticipationRepository participationRepository) {
         this.proofRepository = proofRepository;
+        this.participationRepository = participationRepository;
     }
 
-    /**
-     * Executa a aprovação de uma comprovação
-     * @param proofId ID da comprovação
-     * @return Comprovação aprovada
-     * @throws IllegalArgumentException se comprovação não existe
-     * @throws IllegalStateException se comprovação já foi aprovada
-     */
-    public Proof execute(Long proofId) {
-        // Buscar comprovação
+    public Proof execute(Long proofId, Long approverId) {
         Proof proof = proofRepository.findById(proofId)
                 .orElseThrow(() -> new IllegalArgumentException("Comprovação não encontrada"));
-
-        // Aprovar comprovação (validação de estado ocorre aqui)
-        proof.approve();
-
-        // Persistir comprovação atualizada
+        proof.approve(approverId);
+        participationRepository.save(proof.getParticipation());
         return proofRepository.save(proof);
     }
 }
-

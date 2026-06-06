@@ -48,7 +48,7 @@ public class Challenge {
                                    GoalType goalType, Integer goalValue) {
         validateChallengeData(title, description, creator, deadline, goalType, goalValue);
         return new Challenge(null, title, description, difficulty, subject, goalType, goalValue,
-                ChallengeStatus.PENDING, deadline, locationRequired, LocalDateTime.now(), creator, new ArrayList<>());
+                ChallengeStatus.ACTIVE, deadline, locationRequired, LocalDateTime.now(), creator, new ArrayList<>());
     }
 
     public static Challenge createFromDatabase(Long id, String title, String description, Difficulty difficulty,

@@ -18,5 +18,7 @@ public interface ChallengeJpaRepository extends JpaRepository<ChallengeEntity, L
     Page<ChallengeEntity> findByStatus(ChallengeStatus status, Pageable pageable);
     Page<ChallengeEntity> findAll(Pageable pageable);
     List<ChallengeEntity> findByDeadlineBeforeAndStatusIn(LocalDateTime deadline, Collection<ChallengeStatus> statuses);
+    Page<ChallengeEntity> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+    Page<ChallengeEntity> findByStatusAndTitleContainingIgnoreCase(ChallengeStatus status, String title, Pageable pageable);
 }
 

@@ -68,7 +68,7 @@ class ChallengeControllerTest {
     @Test
     void listChallenges_returns200WithPage() throws Exception {
         PageResult<Challenge> page = new PageResult<>(List.of(sampleChallenge), 1L, 1, 0, 20);
-        when(listChallengeUseCase.execute(any(), anyInt(), anyInt())).thenReturn(page);
+        when(listChallengeUseCase.execute(any(), any(), anyInt(), anyInt())).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/challenges")
                         .with(user(authUser)))

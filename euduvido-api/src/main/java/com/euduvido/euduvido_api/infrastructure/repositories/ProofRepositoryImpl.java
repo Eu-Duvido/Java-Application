@@ -49,10 +49,8 @@ public class ProofRepositoryImpl implements ProofRepository {
 
     @Override
     public List<Proof> findByChallengeId(Long challengeId) {
-        return jpaRepository.findByParticipation_Challenge_Id(challengeId)
-                .stream()
-                .map(ProofEntity::toDomain)
-                .toList();
+        return jpaRepository.findByParticipation_ChallengeId(challengeId)
+                .stream().map(ProofEntity::toDomain).toList();
     }
 
     @Override

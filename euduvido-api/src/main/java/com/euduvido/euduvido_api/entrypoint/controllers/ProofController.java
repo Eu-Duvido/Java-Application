@@ -4,11 +4,13 @@ import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.RejectProofUseCase;
 import com.euduvido.euduvido_api.entrypoint.dtos.request.RejectProofRequest;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ProofResponse;
+import com.euduvido.euduvido_api.infrastructure.security.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,23 +28,27 @@ public class ProofController {
     @Operation(summary = "Aprovar comprovação")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Comprovação aprovada"),
-            @ApiResponse(responseCode = "409", description = "Comprovação já foi avaliada")
+            @ApiResponse(responseCode = "409", description = "Comprovação já foi avaliada ou autoaprovação"),
+            @ApiResponse(responseCode = "403", description = "Usuário não pode aprovar a própria evidência")
     })
     @PostMapping("/{id}/approve")
-    public ResponseEntity<ProofResponse> approveProof(@PathVariable Long id) {
-        return ResponseEntity.ok(ProofResponse.fromDomain(approveProofUseCase.execute(id)));
+    public ResponseEntity<ProofResponse> approveProof(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthUser principal) {
+        return ResponseEntity.ok(ProofResponse.fromDomain(approveProofUseCase.execute(id, principal.getId())));
     }
 
     @Operation(summary = "Rejeitar comprovação", description = "Motivo da rejeição é opcional")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Comprovação rejeitada"),
-            @ApiResponse(responseCode = "409", description = "Comprovação já foi avaliada")
+            @ApiResponse(responseCode = "409", description = "Comprovação já foi aprovada")
     })
     @PostMapping("/{id}/reject")
     public ResponseEntity<ProofResponse> rejectProof(
             @PathVariable Long id,
+            @AuthenticationPrincipal AuthUser principal,
             @RequestBody(required = false) RejectProofRequest request) {
         String reason = request != null ? request.getReason() : null;
-        return ResponseEntity.ok(ProofResponse.fromDomain(rejectProofUseCase.execute(id, reason)));
+        return ResponseEntity.ok(ProofResponse.fromDomain(rejectProofUseCase.execute(id, principal.getId(), reason)));
     }
 }

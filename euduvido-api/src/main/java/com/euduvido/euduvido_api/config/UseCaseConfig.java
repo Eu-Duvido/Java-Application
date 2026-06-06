@@ -9,6 +9,7 @@ import com.euduvido.euduvido_api.application.usecases.participation.SelfJoinChal
 import com.euduvido.euduvido_api.application.usecases.participation.UpdateChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.participation.ListChallengeParticipationUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ApproveProofUseCase;
+import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByChallengeUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.SubmitProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.GetProofUseCase;
 import com.euduvido.euduvido_api.application.usecases.proof.ListProofsByParticipationUseCase;
@@ -66,8 +67,9 @@ public class UseCaseConfig {
     @Bean
     public CreateChallengeUseCase createChallengeUseCase(ChallengeRepository challengeRepository,
                                                          UserRepository userRepository,
+                                                         ChallengeParticipationRepository challengeParticipationRepository,
                                                          AiValidationService aiValidationService) {
-        return new CreateChallengeUseCase(challengeRepository, userRepository, aiValidationService);
+        return new CreateChallengeUseCase(challengeRepository, userRepository, challengeParticipationRepository, aiValidationService);
     }
 
     @Bean
@@ -126,8 +128,9 @@ public class UseCaseConfig {
     }
 
     @Bean
-    public ApproveProofUseCase approveProofUseCase(ProofRepository proofRepository) {
-        return new ApproveProofUseCase(proofRepository);
+    public ApproveProofUseCase approveProofUseCase(ProofRepository proofRepository,
+                                                    ChallengeParticipationRepository participationRepository) {
+        return new ApproveProofUseCase(proofRepository, participationRepository);
     }
 
     @Bean
@@ -207,9 +210,9 @@ public class UseCaseConfig {
 
     @Bean
     public SelfJoinChallengeUseCase selfJoinChallengeUseCase(
-            ChallengeParticipationRepository participationRepository,
+            ChallengeParticipationRepository challengeParticipationRepository,
             ChallengeRepository challengeRepository,
             UserRepository userRepository) {
-        return new SelfJoinChallengeUseCase(participationRepository, challengeRepository, userRepository);
+        return new SelfJoinChallengeUseCase(challengeParticipationRepository, challengeRepository, userRepository);
     }
 }

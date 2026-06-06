@@ -45,7 +45,7 @@ public class SubmitProofUseCase {
         // Conteúdo impróprio (450) bloqueia o envio; não relacionado a estudos (400) salva com aiValid=false
         if (description != null && !description.isBlank()) {
             EvidenceValidationResult textResult = aiValidationService.validateEvidenceContent(description);
-            if (textResult.status() == 450) {
+            if (textResult.status() != 200) {
                 throw new EvidenceValidationException(textResult);
             }
         }
@@ -59,7 +59,7 @@ public class SubmitProofUseCase {
                     fileBytes, mimeType,
                     participation.getChallenge().getTitle(),
                     participation.getChallenge().getDescription());
-            if (imageResult.status() == 450) {
+            if (imageResult.status() != 200) {
                 throw new EvidenceValidationException(imageResult);
             }
         }

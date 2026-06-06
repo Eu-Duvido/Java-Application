@@ -28,7 +28,7 @@ class ChallengeTest {
         assertEquals("Desafio Radical", challenge.getTitle());
         assertEquals(creator, challenge.getCreator());
         assertEquals(deadline, challenge.getDeadline());
-        assertEquals(ChallengeStatus.PENDING, challenge.getStatus());
+        assertEquals(ChallengeStatus.ACTIVE, challenge.getStatus());
         assertEquals(DEFAULT_DIFFICULTY, challenge.getDifficulty());
         assertEquals(DEFAULT_GOAL_VALUE, challenge.getGoalValue());
         assertNull(challenge.getId());
@@ -58,6 +58,7 @@ class ChallengeTest {
                 LocalDateTime.now().plusDays(7), false, DEFAULT_DIFFICULTY, null,
                 DEFAULT_GOAL_TYPE, DEFAULT_GOAL_VALUE);
 
+        challenge.setStatus(ChallengeStatus.PENDING);
         challenge.activate();
 
         assertEquals(ChallengeStatus.ACTIVE, challenge.getStatus());
@@ -69,8 +70,6 @@ class ChallengeTest {
         Challenge challenge = Challenge.create("Título", "Descrição", creator,
                 LocalDateTime.now().plusDays(7), false, DEFAULT_DIFFICULTY, null,
                 DEFAULT_GOAL_TYPE, DEFAULT_GOAL_VALUE);
-        challenge.activate();
-
         assertThrows(IllegalStateException.class, challenge::activate);
     }
 
@@ -80,8 +79,6 @@ class ChallengeTest {
         Challenge challenge = Challenge.create("Título", "Descrição", creator,
                 LocalDateTime.now().plusDays(7), false, DEFAULT_DIFFICULTY, null,
                 DEFAULT_GOAL_TYPE, DEFAULT_GOAL_VALUE);
-        challenge.activate();
-
         challenge.complete();
 
         assertEquals(ChallengeStatus.COMPLETED, challenge.getStatus());

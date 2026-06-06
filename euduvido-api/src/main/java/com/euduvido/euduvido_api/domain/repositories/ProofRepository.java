@@ -36,11 +36,6 @@ public interface ProofRepository {
     Optional<Proof> findPendingProofByParticipationId(Long participationId);
 
     /**
-     * Listar todas as comprovações de um desafio (todas as participações)
-     */
-    List<Proof> findByChallengeId(Long challengeId);
-
-    /**
      * Deletar uma comprovação pelo ID
      */
     void deleteById(Long id);

@@ -8,6 +8,7 @@ import com.euduvido.euduvido_api.domain.entities.User;
 import com.euduvido.euduvido_api.domain.enums.ChallengeStatus;
 import com.euduvido.euduvido_api.domain.enums.Difficulty;
 import com.euduvido.euduvido_api.domain.enums.GoalType;
+import com.euduvido.euduvido_api.domain.repositories.ChallengeParticipationRepository;
 import com.euduvido.euduvido_api.domain.repositories.ChallengeRepository;
 import com.euduvido.euduvido_api.domain.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,7 @@ class CreateChallengeUseCaseTest {
 
     @Mock ChallengeRepository challengeRepository;
     @Mock UserRepository userRepository;
+    @Mock ChallengeParticipationRepository participationRepository;
     @Mock AiValidationService aiValidationService;
 
     @InjectMocks CreateChallengeUseCase useCase;
@@ -50,7 +53,7 @@ class CreateChallengeUseCaseTest {
         when(aiValidationService.validateChallenge(anyString(), anyString(), anyString())).thenReturn(valid);
         Challenge saved = Challenge.createFromDatabase(1L, "Ler 30 páginas", "Leitura",
                 Difficulty.EASY, "Portuguese", GoalType.PAGES, 30,
-                creator, LocalDateTime.now().plusDays(5), ChallengeStatus.PENDING,
+                creator, LocalDateTime.now().plusDays(5), ChallengeStatus.ACTIVE,
                 false, LocalDateTime.now(), List.of());
         when(challengeRepository.save(any())).thenReturn(saved);
 
@@ -60,7 +63,8 @@ class CreateChallengeUseCaseTest {
 
         assertNotNull(result);
         assertEquals("Ler 30 páginas", result.getTitle());
-        assertEquals(ChallengeStatus.PENDING, result.getStatus());
+        assertEquals(ChallengeStatus.ACTIVE, result.getStatus());
+        verify(participationRepository).save(any());
     }
 
     @Test

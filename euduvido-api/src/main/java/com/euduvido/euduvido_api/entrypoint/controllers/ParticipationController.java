@@ -55,7 +55,6 @@ public class ParticipationController {
     private final UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase;
     private final UpdateProgressUseCase updateProgressUseCase;
     private final ListProofsByParticipationUseCase listProofsByParticipationUseCase;
-    private final ListProofsByChallengeUseCase listProofsByChallengeUseCase;
     private final SelfJoinChallengeUseCase selfJoinChallengeUseCase;
     private final ListChallengeParticipationUseCase listChallengeParticipationUseCase;
 
@@ -71,7 +70,6 @@ public class ParticipationController {
                                    UpdateChallengeParticipationUseCase updateChallengeParticipationUseCase,
                                    UpdateProgressUseCase updateProgressUseCase,
                                    ListProofsByParticipationUseCase listProofsByParticipationUseCase,
-                                   ListProofsByChallengeUseCase listProofsByChallengeUseCase,
                                    SelfJoinChallengeUseCase selfJoinChallengeUseCase,
                                    ListChallengeParticipationUseCase listChallengeParticipationUseCase) {
         this.acceptChallengeUseCase = acceptChallengeUseCase;
@@ -86,6 +84,8 @@ public class ParticipationController {
         this.updateChallengeParticipationUseCase = updateChallengeParticipationUseCase;
         this.updateProgressUseCase = updateProgressUseCase;
         this.selfJoinChallengeUseCase = selfJoinChallengeUseCase;
+        this.listProofsByParticipationUseCase = listProofsByParticipationUseCase;
+        this.listChallengeParticipationUseCase = listChallengeParticipationUseCase;
     }
 
     @Operation(summary = "Listar comprovações de todos os participantes de um desafio")
@@ -97,10 +97,6 @@ public class ParticipationController {
                 .map(ProofResponse::fromDomain)
                 .toList();
         return ResponseEntity.ok(proofs);
-        this.listProofsByParticipationUseCase = listProofsByParticipationUseCase;
-        this.listProofsByChallengeUseCase = listProofsByChallengeUseCase;
-        this.selfJoinChallengeUseCase = selfJoinChallengeUseCase;
-        this.listChallengeParticipationUseCase = listChallengeParticipationUseCase;
     }
 
     @Operation(summary = "Aceitar desafio")
@@ -255,29 +251,11 @@ public class ParticipationController {
                 .collect(Collectors.toList()));
     }
 
-    @Operation(summary = "Criador entra no próprio desafio como participante ACCEPTED")
-    @ApiResponse(responseCode = "201", description = "Participação criada ou retornada existente")
-    @PostMapping("/self-join/{challengeId}")
-    public ResponseEntity<ChallengeParticipationResponse> selfJoin(
-            @AuthenticationPrincipal AuthUser principal,
-            @PathVariable Long challengeId) {
-        var participation = selfJoinChallengeUseCase.execute(principal.getId(), challengeId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ChallengeParticipationResponse.fromDomain(participation));
-    }
-
     @Operation(summary = "Listar comprovações de uma participação")
     @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada")
     @GetMapping("/{id}/proofs")
     public ResponseEntity<List<ProofResponse>> listProofsByParticipation(@PathVariable Long id) {
         var proofs = listProofsByParticipationUseCase.execute(id);
-        return ResponseEntity.ok(proofs.stream().map(ProofResponse::fromDomain).collect(Collectors.toList()));
-    }
-
-    @Operation(summary = "Listar todas as comprovações de um desafio (todas as participações)")
-    @ApiResponse(responseCode = "200", description = "Lista de comprovações retornada, ordenada por data desc")
-    @GetMapping("/challenge/{challengeId}/proofs")
-    public ResponseEntity<List<ProofResponse>> listProofsByChallenge(@PathVariable Long challengeId) {
-        var proofs = listProofsByChallengeUseCase.execute(challengeId);
         return ResponseEntity.ok(proofs.stream().map(ProofResponse::fromDomain).collect(Collectors.toList()));
     }
 }

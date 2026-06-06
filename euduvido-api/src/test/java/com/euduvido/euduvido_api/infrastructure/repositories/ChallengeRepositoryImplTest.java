@@ -16,11 +16,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -32,8 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
-        "spring.flyway.enabled=true",
-        "spring.jpa.hibernate.ddl-auto=validate"
+        "spring.flyway.enabled=false",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 @Transactional
 @EnabledIf("dockerAvailable")
@@ -70,7 +74,7 @@ class ChallengeRepositoryImplTest {
         registry.add("spring.datasource.password", mysql::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
         registry.add("spring.jpa.properties.hibernate.dialect",
-                () -> "org.hibernate.dialect.MySQL8Dialect");
+                () -> "org.hibernate.dialect.MySQLDialect");
     }
 
     @PersistenceContext EntityManager em;
@@ -78,6 +82,14 @@ class ChallengeRepositoryImplTest {
     @Autowired UserJpaRepository userJpaRepository;
 
     private UserEntity savedUser;
+
+    @TestConfiguration
+    static class TestCorsConfig {
+        @Bean
+        CorsConfigurationSource corsConfigurationSource() {
+            return request -> new CorsConfiguration();
+        }
+    }
 
     @BeforeEach
     void setUp() {

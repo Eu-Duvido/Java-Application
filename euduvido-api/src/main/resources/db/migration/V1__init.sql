@@ -66,3 +66,28 @@ CREATE TABLE proofs
     PRIMARY KEY (id),
     CONSTRAINT fk_proofs_participation FOREIGN KEY (participation_id) REFERENCES challenge_participations (id)
 );
+
+CREATE TABLE ai_insights
+(
+    id_insight      BIGINT        NOT NULL AUTO_INCREMENT,
+    no_curso        VARCHAR(255)  NOT NULL,
+    no_area_geral   VARCHAR(255)  NOT NULL,
+    no_regiao       VARCHAR(50)   NOT NULL,
+    tp_modalidade   INT           NOT NULL,
+    nu_ano_censo    INT,
+    tipo            VARCHAR(50)   NOT NULL,
+    titulo          VARCHAR(255)  NOT NULL,
+    descricao       TEXT          NOT NULL,
+    valor_destaque  DOUBLE        NOT NULL,
+    unidade         VARCHAR(100)  NOT NULL,
+    interpretacao   TEXT          NOT NULL,
+    dados_grafico   JSON          NOT NULL,
+    nivel           VARCHAR(10)   NOT NULL,
+    dt_geracao      DATETIME      NOT NULL,
+    PRIMARY KEY (id_insight),
+    INDEX ix_ai_perfil(no_curso, no_regiao, tp_modalidade),
+    INDEX ix_ai_tipo(tipo),
+    INDEX ix_ai_nivel(nivel),
+    INDEX ix_ai_dt_geracao(dt_geracao)
+);
+

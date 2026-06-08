@@ -1,6 +1,8 @@
 package com.euduvido.euduvido_api.entrypoint.controllers;
 
 import com.euduvido.euduvido_api.application.services.DashboardService;
+import com.euduvido.euduvido_api.application.usecases.dashboard.GenerateEducationalInsightsUseCase;
+import com.euduvido.euduvido_api.entrypoint.dtos.response.AiInsightsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.ChallengeMetricsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.DailyPointsResponse;
 import com.euduvido.euduvido_api.entrypoint.dtos.response.EngagementMetricsResponse;
@@ -22,9 +24,12 @@ import java.util.List;
 public class DashboardController {
 
     private final DashboardService service;
+    private final GenerateEducationalInsightsUseCase generateInsightsUseCase;
 
-    public DashboardController(DashboardService service) {
-        this.service = service;
+    public DashboardController(DashboardService service,
+                               GenerateEducationalInsightsUseCase generateInsightsUseCase) {
+        this.service               = service;
+        this.generateInsightsUseCase = generateInsightsUseCase;
     }
 
     @Operation(summary = "Ranking geral de usuários por pontos (vw_user_ranking)")
@@ -60,5 +65,12 @@ public class DashboardController {
     @GetMapping("/engagement")
     public ResponseEntity<EngagementMetricsResponse> getEngagementMetrics() {
         return ResponseEntity.ok(service.getEngagementMetrics());
+    }
+
+    @Operation(summary = "Insights educacionais gerados por IA (Gemini) — cruza dados do app com dados INEP")
+    @ApiResponse(responseCode = "200", description = "Lista de insights narrativos. Retorna lista vazia se a IA estiver indisponível.")
+    @GetMapping("/ai-insights")
+    public ResponseEntity<AiInsightsResponse> getAiInsights() {
+        return ResponseEntity.ok(generateInsightsUseCase.execute());
     }
 }

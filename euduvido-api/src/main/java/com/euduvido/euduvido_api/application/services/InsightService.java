@@ -5,37 +5,39 @@ import com.euduvido.euduvido_api.infrastructure.persistence.repositories.AiInsig
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Serviço responsável por:
- *   1. Chamar a API Python (DW) para obter dados do INEP + prompt_sugerido
+ *   1. Consultar as views INEP diretamente no MySQL (mesmo banco do Data-Pipeline)
  *   2. Enviar os dados ao Gemini para geração dos insights
  *   3. Parsear a resposta do Gemini
  *   4. Salvar os insights na tabela ai_insights
- *
- * Configurações necessárias no application.yml:
- *   python.api.url=http://localhost:8000
- *   gemini.api.key=SUA_CHAVE_AQUI
  */
 @Service
 public class InsightService {
 
-    @Value("${python.api.url:http://localhost:8000}")
-    private String pythonApiUrl;
-
     @Value("${app.gemini.api-key}")
     private String geminiApiKey;
 
+    @Value("${app.gemini.base-url:https://generativelanguage.googleapis.com}")
+    private String geminiBaseUrl;
+
+    @Value("${app.gemini.model:gemini-flash-latest}")
+    private String geminiModel;
+
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Autowired
     private AiInsightJpaRepository insightRepository;
@@ -47,21 +49,13 @@ public class InsightService {
     // Método principal
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Gera e salva os 3 insights personalizados para o perfil do usuário.
-     *
-     * @param curso       Nome do curso (ex.: "Direito")
-     * @param regiao      Região do Brasil (ex.: "Nordeste")
-     * @param modalidade  1 = Presencial | 2 = EAD
-     * @param areaGeral   Área CINE geral — pode passar string vazia
-     */
     public List<AiInsightEntity> gerarInsights(
             String curso,
             String regiao,
             int modalidade,
             String areaGeral) throws Exception {
 
-        // 1. Busca dados do DW na API Python
+        // 1. Busca dados das views MySQL diretamente (sem depender do Python)
         Map<String, Object> dadosDW = buscarDadosDW(curso, regiao, modalidade, areaGeral);
 
         // 2. Monta o prompt completo e envia ao Gemini
@@ -89,20 +83,82 @@ public class InsightService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Chamada à API Python
+    // Consulta direta às views MySQL (replica lógica do Python /insights/dados-perfil)
     // ─────────────────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> buscarDadosDW(
             String curso, String regiao, int modalidade, String areaGeral) {
 
-        String url = pythonApiUrl + "/insights/dados-perfil"
-                + "?no_curso="      + URLEncoder.encode(curso,  StandardCharsets.UTF_8)
-                + "&no_regiao="     + URLEncoder.encode(regiao, StandardCharsets.UTF_8)
-                + "&tp_modalidade=" + modalidade
-                + "&no_area_geral=" + URLEncoder.encode(areaGeral != null ? areaGeral : "", StandardCharsets.UTF_8);
+        List<Map<String, Object>> dadosCursoNacional = jdbc.queryForList(
+            """
+            SELECT no_curso, no_area_geral, no_area_especifica,
+                   total_ingressantes, total_vagas, total_matriculados,
+                   total_concluintes, num_ies_ofertantes, pct_conclusao
+            FROM   vw_ranking_cursos_area
+            WHERE  no_curso = ?
+            LIMIT  1
+            """,
+            curso
+        );
 
-        return restTemplate.getForObject(url, Map.class);
+        List<Map<String, Object>> dadosCursoRegiao = jdbc.queryForList(
+            """
+            SELECT no_regiao, no_curso, no_area_geral,
+                   total_ingressantes, total_matriculados, total_concluintes,
+                   total_vagas, pct_conclusao, pct_ocupacao_vagas, rank_na_regiao
+            FROM   vw_ranking_cursos_regiao
+            WHERE  no_curso  = ?
+              AND  no_regiao = ?
+            LIMIT  1
+            """,
+            curso, regiao
+        );
+
+        List<Map<String, Object>> eadVsPresencial = jdbc.queryForList(
+            """
+            SELECT modalidade, total_matriculados,
+                   total_ingressantes, total_concluintes, num_cursos
+            FROM   vw_ead_vs_presencial
+            WHERE  no_regiao = ?
+            ORDER  BY total_matriculados DESC
+            """,
+            regiao
+        );
+
+        List<Map<String, Object>> kpisNacionais = jdbc.queryForList(
+            "SELECT * FROM vw_resumo_geral ORDER BY nu_ano_censo DESC LIMIT 1"
+        );
+
+        String modalidadeLabel = modalidade == 1 ? "Presencial" : "EAD";
+
+        String promptSugerido = String.format(
+            "Você é um coach de estudos. Com base nos dados reais do Censo da " +
+            "Educação Superior Brasileira (INEP 2024) abaixo, gere exatamente 3 insights " +
+            "personalizados e motivadores para um estudante do curso de %s " +
+            "na região %s na modalidade %s. " +
+            "Cite os números dos dados. Responda em JSON com a estrutura: " +
+            "[{\"tipo\": \"competitividade|conclusao|modalidade\", " +
+            "\"titulo\": \"...\", \"descricao\": \"...\", " +
+            "\"valor_destaque\": 0.0, \"unidade\": \"...\", " +
+            "\"interpretacao\": \"...\", \"nivel\": \"alto|medio|baixo\"}]",
+            curso, regiao, modalidadeLabel
+        );
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("perfil_usuario", Map.of(
+                "no_curso",      curso,
+                "no_area_geral", areaGeral != null ? areaGeral : "",
+                "no_regiao",     regiao,
+                "tp_modalidade", modalidade,
+                "modalidade",    modalidadeLabel
+        ));
+        result.put("dados_curso_nacional",  dadosCursoNacional);
+        result.put("dados_curso_na_regiao", dadosCursoRegiao);
+        result.put("ead_vs_presencial",     eadVsPresencial);
+        result.put("kpis_censo_nacional",   kpisNacionais);
+        result.put("prompt_sugerido",       promptSugerido);
+
+        return result;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -111,8 +167,8 @@ public class InsightService {
 
     @SuppressWarnings("unchecked")
     private String chamarGemini(String prompt) throws Exception {
-        String geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/"
-                + "gemini-1.5-flash:generateContent?key=" + geminiApiKey;
+        String geminiUrl = geminiBaseUrl + "/v1beta/models/"
+                + geminiModel + ":generateContent?key=" + geminiApiKey;
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of(
@@ -122,7 +178,6 @@ public class InsightService {
 
         Map<String, Object> resposta = restTemplate.postForObject(geminiUrl, body, Map.class);
 
-        // Extrai o texto da resposta do Gemini
         List<Map<String, Object>> candidates = (List<Map<String, Object>>) resposta.get("candidates");
         Map<String, Object> content          = (Map<String, Object>) candidates.get(0).get("content");
         List<Map<String, Object>> parts      = (List<Map<String, Object>>) content.get("parts");
@@ -133,7 +188,6 @@ public class InsightService {
     // Helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** Remove blocos ```json ... ``` caso o Gemini os inclua na resposta. */
     private String limparJsonGemini(String texto) {
         return texto
                 .replaceAll("(?s)```json\\s*", "")

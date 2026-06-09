@@ -14,12 +14,12 @@ import java.util.List;
  * Controller REST para geração e consulta de AI Insights.
  *
  * Endpoints:
- *   POST /api/insights/gerar   — gera novos insights via Gemini e salva no banco
- *   GET  /api/insights         — retorna insights já salvos (sem chamar Gemini)
- *   GET  /api/insights/existe  — verifica se já há insights para o perfil
+ *   POST /api/v1/insights/gerar   — gera novos insights via Gemini e salva no banco
+ *   GET  /api/v1/insights         — retorna insights já salvos (sem chamar Gemini)
+ *   GET  /api/v1/insights/existe  — verifica se já há insights para o perfil
  */
 @RestController
-@RequestMapping("/api/insights")
+@RequestMapping("/api/v1/insights")
 @CrossOrigin(origins = "*")
 @Tag(name = "Insights", description = "Insights gerados via IA com base no perfil do usuário (curso, região, modalidade)")
 public class InsightController {
@@ -36,7 +36,7 @@ public class InsightController {
      * Gera os 3 insights para o perfil do usuário chamando o Gemini.
      * Chamar no login quando não existirem insights salvos.
      *
-     * POST /api/insights/gerar?curso=Direito&regiao=Nordeste&modalidade=1
+     * POST /api/v1/insights/gerar?curso=Direito&regiao=Nordeste&modalidade=1
      */
     @PostMapping("/gerar")
     public ResponseEntity<?> gerar(
@@ -59,14 +59,16 @@ public class InsightController {
     /**
      * Retorna os insights já salvos. Use nas visitas subsequentes do usuário.
      *
-     * GET /api/insights?curso=Direito&regiao=Nordeste
+     * GET /api/v1/insights?curso=Direito&regiao=Nordeste
      */
     @GetMapping
     public List<AiInsightEntity> listar(
-            @RequestParam String curso,
-            @RequestParam String regiao) {
-        return insightRepository
-                .findByNoCursoAndNoRegiaoOrderByDtGeracaoDesc(curso, regiao);
+            @RequestParam(required = false) String curso,
+            @RequestParam(required = false) String regiao) {
+        if (curso != null && !curso.isBlank() && regiao != null && !regiao.isBlank()) {
+            return insightRepository.findByNoCursoAndNoRegiaoOrderByDtGeracaoDesc(curso, regiao);
+        }
+        return insightRepository.findTop10ByOrderByDtGeracaoDesc();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -75,7 +77,7 @@ public class InsightController {
      * Verifica se já existem insights salvos para o perfil.
      * O front usa isso para decidir entre /gerar ou /listar.
      *
-     * GET /api/insights/existe?curso=Direito&regiao=Nordeste&modalidade=1
+     * GET /api/v1/insights/existe?curso=Direito&regiao=Nordeste&modalidade=1
      * Retorna: true | false
      */
     @GetMapping("/existe")

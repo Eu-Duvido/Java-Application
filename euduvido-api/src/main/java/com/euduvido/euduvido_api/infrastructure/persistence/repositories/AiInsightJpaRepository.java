@@ -9,14 +9,12 @@ import java.util.List;
 @Repository
 public interface AiInsightJpaRepository extends JpaRepository<AiInsightEntity, Long> {
 
-    /**
-     * Busca todos os insights de um usuário ordenados do mais recente.
-     * Usado pelo front para exibir insights já gerados sem chamar Gemini de novo.
-     */
     List<AiInsightEntity> findByNoCursoAndNoRegiaoOrderByDtGeracaoDesc(
         String noCurso,
         String noRegiao
     );
+
+    List<AiInsightEntity> findTop10ByOrderByDtGeracaoDesc();
 
     /**
      * Verifica se já existe insight para o perfil.

@@ -2,6 +2,8 @@ package com.euduvido.euduvido_api.application.services;
 
 import com.euduvido.euduvido_api.infrastructure.persistence.entities.AiInsightEntity;
 import com.euduvido.euduvido_api.infrastructure.persistence.repositories.AiInsightJpaRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,8 @@ import java.util.Map;
  */
 @Service
 public class InsightService {
+
+    private static final Logger log = LoggerFactory.getLogger(InsightService.class);
 
     @Value("${app.gemini.api-key}")
     private String geminiApiKey;
@@ -58,24 +62,33 @@ public class InsightService {
         // 1. Busca dados das views MySQL diretamente (sem depender do Python)
         Map<String, Object> dadosDW = buscarDadosDW(curso, regiao, modalidade, areaGeral);
 
-        // 2. Monta o prompt completo e envia ao Gemini
-        String promptSugerido = (String) dadosDW.get("prompt_sugerido");
-        String promptCompleto = promptSugerido
-                + "\n\nDados do Censo INEP 2024:\n"
-                + objectMapper.writeValueAsString(dadosDW);
+        List<Map<String, Object>> insightsJson;
+        String fonte = "gemini";
 
-        String respostaGemini = chamarGemini(promptCompleto);
+        try {
+            // 2. Monta o prompt completo e envia ao Gemini
+            String promptSugerido = (String) dadosDW.get("prompt_sugerido");
+            String promptCompleto = promptSugerido
+                    + "\n\nDados do Censo INEP 2024:\n"
+                    + objectMapper.writeValueAsString(dadosDW);
 
-        // 3. Parseia o JSON retornado pelo Gemini
-        List<Map<String, Object>> insightsJson = objectMapper.readValue(
-                limparJsonGemini(respostaGemini),
-                objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class)
-        );
+            String respostaGemini = chamarGemini(promptCompleto);
+
+            // 3. Parseia o JSON retornado pelo Gemini
+            insightsJson = objectMapper.readValue(
+                    limparJsonGemini(respostaGemini),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class)
+            );
+        } catch (Exception e) {
+            log.warn("Falha ao gerar insights com Gemini. Usando fallback local.", e);
+            insightsJson = gerarInsightsFallback(dadosDW, curso, regiao, modalidade, areaGeral);
+            fonte = "fallback";
+        }
 
         // 4. Salva cada insight no banco
         List<AiInsightEntity> salvos = new ArrayList<>();
         for (Map<String, Object> ins : insightsJson) {
-            AiInsightEntity entity = mapearInsight(ins, curso, regiao, modalidade, areaGeral);
+            AiInsightEntity entity = mapearInsight(ins, curso, regiao, modalidade, areaGeral, fonte);
             salvos.add(insightRepository.save(entity));
         }
 
@@ -197,7 +210,7 @@ public class InsightService {
 
     private AiInsightEntity mapearInsight(
             Map<String, Object> ins,
-            String curso, String regiao, int modalidade, String areaGeral) {
+            String curso, String regiao, int modalidade, String areaGeral, String fonte) {
 
         AiInsightEntity entity = new AiInsightEntity();
         entity.setNoCurso(curso);
@@ -211,6 +224,7 @@ public class InsightService {
         entity.setUnidade(truncar((String) ins.get("unidade"), 100));
         entity.setInterpretacao((String) ins.get("interpretacao"));
         entity.setNivel(validarNivel((String) ins.get("nivel")));
+        entity.setFonte(fonte);
         entity.setDtGeracao(LocalDateTime.now());
 
         Object grafico = ins.get("dados_grafico");
@@ -223,6 +237,104 @@ public class InsightService {
         }
 
         return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> gerarInsightsFallback(
+            Map<String, Object> dadosDW,
+            String curso,
+            String regiao,
+            int modalidade,
+            String areaGeral) {
+
+        Map<String, Object> cursoNacional = primeiroRegistro(dadosDW.get("dados_curso_nacional"));
+        Map<String, Object> cursoRegiao = primeiroRegistro(dadosDW.get("dados_curso_na_regiao"));
+        List<Map<String, Object>> modalidades = dadosDW.get("ead_vs_presencial") instanceof List
+                ? (List<Map<String, Object>>) dadosDW.get("ead_vs_presencial")
+                : List.of();
+
+        double pctOcupacao = toDouble(cursoRegiao.get("pct_ocupacao_vagas"));
+        double pctConclusao = toDouble(valorOuPadrao(
+                cursoRegiao.get("pct_conclusao"),
+                cursoNacional.get("pct_conclusao")
+        ));
+        double matriculadosModalidade = matriculadosDaModalidade(modalidades, modalidade);
+        double totalMatriculadosRegiao = modalidades.stream()
+                .mapToDouble(item -> toDouble(item.get("total_matriculados")))
+                .sum();
+        double participacaoModalidade = totalMatriculadosRegiao > 0
+                ? (matriculadosModalidade / totalMatriculadosRegiao) * 100
+                : 0.0;
+
+        List<Map<String, Object>> fallback = new ArrayList<>();
+        fallback.add(Map.of(
+                "tipo", "competitividade",
+                "titulo", "Demanda do curso na regiao",
+                "descricao", String.format(
+                        "Para %s em %s, os dados indicam %.1f%% de ocupacao das vagas.",
+                        curso, regiao, pctOcupacao),
+                "valor_destaque", pctOcupacao,
+                "unidade", "% de ocupacao",
+                "interpretacao", pctOcupacao >= 70.0
+                        ? "A procura esta aquecida. Vale se preparar com consistencia para se destacar."
+                        : "Ainda ha espaco para crescimento. Uma preparacao bem direcionada pode virar vantagem.",
+                "nivel", nivelPorPercentual(pctOcupacao)
+        ));
+        fallback.add(Map.of(
+                "tipo", "conclusao",
+                "titulo", "Conclusao como sinal de persistencia",
+                "descricao", String.format(
+                        "O percentual de conclusao disponivel para %s e de %.1f%%.",
+                        curso, pctConclusao),
+                "valor_destaque", pctConclusao,
+                "unidade", "% de conclusao",
+                "interpretacao", pctConclusao >= 50.0
+                        ? "Os dados mostram um caminho possivel para quem mantem ritmo e planejamento."
+                        : "A conclusao exige disciplina. Transformar rotina em habito pode fazer diferenca.",
+                "nivel", nivelPorPercentual(pctConclusao)
+        ));
+        fallback.add(Map.of(
+                "tipo", "modalidade",
+                "titulo", "Forca da modalidade escolhida",
+                "descricao", String.format(
+                        "A modalidade %s representa %.1f%% das matriculas mapeadas na regiao.",
+                        modalidade == 1 ? "Presencial" : "EAD", participacaoModalidade),
+                "valor_destaque", participacaoModalidade,
+                "unidade", "% das matriculas",
+                "interpretacao", participacaoModalidade >= 50.0
+                        ? "Sua modalidade tem forte presenca regional, o que pode ampliar referencias e oportunidades."
+                        : "Mesmo com menor participacao, sua modalidade pode ser uma escolha estrategica se combinar com sua rotina.",
+                "nivel", nivelPorPercentual(participacaoModalidade)
+        ));
+
+        return fallback;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> primeiroRegistro(Object valor) {
+        if (valor instanceof List<?> lista && !lista.isEmpty() && lista.get(0) instanceof Map<?, ?>) {
+            return (Map<String, Object>) lista.get(0);
+        }
+        return Map.of();
+    }
+
+    private Object valorOuPadrao(Object valor, Object padrao) {
+        return valor != null ? valor : padrao;
+    }
+
+    private double matriculadosDaModalidade(List<Map<String, Object>> modalidades, int modalidade) {
+        String modalidadeLabel = modalidade == 1 ? "Presencial" : "EAD";
+        return modalidades.stream()
+                .filter(item -> modalidadeLabel.equalsIgnoreCase(String.valueOf(item.get("modalidade"))))
+                .findFirst()
+                .map(item -> toDouble(item.get("total_matriculados")))
+                .orElse(0.0);
+    }
+
+    private String nivelPorPercentual(double valor) {
+        if (valor >= 70.0) return "alto";
+        if (valor >= 35.0) return "medio";
+        return "baixo";
     }
 
     private double toDouble(Object valor) {

@@ -80,6 +80,9 @@ public class AiInsightEntity {
     @Column(name = "nivel", nullable = false, length = 10)
     private String nivel;
 
+    @Column(name = "fonte", nullable = false, length = 20)
+    private String fonte;
+
     @Column(name = "dt_geracao", nullable = false)
     private LocalDateTime dtGeracao;
 
@@ -126,6 +129,9 @@ public class AiInsightEntity {
 
     public String getNivel() { return nivel; }
     public void setNivel(String nivel) { this.nivel = nivel; }
+
+    public String getFonte() { return fonte; }
+    public void setFonte(String fonte) { this.fonte = fonte; }
 
     public LocalDateTime getDtGeracao() { return dtGeracao; }
     public void setDtGeracao(LocalDateTime dtGeracao) { this.dtGeracao = dtGeracao; }
